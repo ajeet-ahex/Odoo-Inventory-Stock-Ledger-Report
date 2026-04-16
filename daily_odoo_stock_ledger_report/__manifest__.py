@@ -17,6 +17,8 @@
         'wizard/stock_ledger_line_view.xml',
     ],
     'images': ['static/description/banner.png'],
+    'price' : '19',
+    'currency' : 'USD',
     'license': 'OPL-1',
     'application': False,
     'installable': True,
