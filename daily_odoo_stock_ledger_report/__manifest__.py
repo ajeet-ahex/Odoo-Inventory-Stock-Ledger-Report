@@ -16,6 +16,7 @@
         'wizard/stock_ledger_wizard_view.xml',
         'wizard/stock_ledger_line_view.xml',
     ],
+    'images': ['static/description/banner.png'],
     'license': 'OPL-1',
     'application': False,
     'installable': True,
