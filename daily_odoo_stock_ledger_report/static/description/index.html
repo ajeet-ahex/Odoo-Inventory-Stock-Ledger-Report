@@ -1,1116 +1,277 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Odoo Stock Ledger Report | Modern Inventory Tracking by Ahex Technologies</title>
-  <meta name="description" content="Enhance Odoo Inventory with a line-by-line stock movement history, running balance, automatic opening balance calculation, and color-coded tracking.">
-  <meta name="keywords" content="stock ledger, inventory movement, stock history, stock movement report, odoo inventory, running stock balance">
-  
-  <!-- Typography, Icons & Bootstrap Grid Framework -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css">
-  
-  <style>
-    :root {
-      --primary: #7C3AED;
-      --primary-hover: #6D28D9;
-      --primary-light: #F3E8FF;
-      --primary-pill-bg: #E9DDFE;
-      --secondary: #EC4899;
-      --secondary-hover: #DB2777;
-      --secondary-light: #FCE7F3;
-      --text-dark: #1E293B;
-      --text-muted: #64748B;
-      --text-light: #94A3B8;
-      --bg-light: #F8F5FF;
-      --bg-white: #FFFFFF;
-      --success: #10B981;
-      --success-light: #D1FAE5;
-      --danger: #EF4444;
-      --danger-light: #FEE2E2;
-      --border-color: #E9DDFE;
-      --font-heading: 'Inter', sans-serif;
-      --font-body: 'Inter', sans-serif;
-      --radius-sm: 12px;
-      --radius-md: 16px;
-      --radius-lg: 24px;
-      --shadow-sm: 0 1px 3px rgba(124, 58, 237, 0.05);
-      --shadow-md: 0 4px 6px -1px rgba(124, 58, 237, 0.05), 0 2px 4px -1px rgba(124, 58, 237, 0.02);
-      --shadow-lg: 0 10px 15px -3px rgba(124, 58, 237, 0.1), 0 4px 6px -2px rgba(124, 58, 237, 0.05);
-    }
+<!-- SECTION 1: HERO BANNER -->
+<section class="oe_container" style="margin-bottom: 24px; padding: 0;">
+    <div style="background-color: #71639E; border-radius: 12px; padding: 45px 30px; color: #FFFFFF; text-align: center;">
+        <div class="oe_row oe_spaced" style="max-width: 900px; margin: 0 auto;">
+            <div class="oe_span12">
+                <span style="background-color: #FFFFFF; color: #71639E; font-weight: 700; font-size: 11px; padding: 5px 12px; border-radius: 20px; text-transform: uppercase; letter-spacing: 1px; display: inline-block; margin-bottom: 15px;">Odoo 19 Ready</span>
+                <h2 class="oe_slogan" style="color: #FFFFFF; font-weight: 800; font-size: 36px; margin: 5px 0 15px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">Odoo Stock Ledger Report</h2>
+                <h3 class="oe_slogan" style="color: #F3E8FF; font-weight: 300; font-size: 18px; margin: 0 auto; max-width: 750px; line-height: 1.5; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; opacity: 0.95;">
+                    A line-by-line history of every stock movement — incoming, outgoing, and running balance — giving you full, auditable warehouse visibility at any point in time.
+                </h3>
+            </div>
+        </div>
+    </div>
+</section>
 
-    /* Resets & Standalone Base Styles */
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+<!-- SECTION 2: PROBLEM & SOLUTION -->
+<section class="oe_container" style="margin-bottom: 30px;">
+    <div class="oe_row oe_spaced" style="max-width: 900px; margin: 0 auto;">
+        <div class="oe_span12 text-center">
+            <h2 class="oe_slogan" style="color: #71639E; font-weight: 700; font-size: 24px; margin-bottom: 15px;">Simplify Warehouse Audits &amp; Inventory Tracking</h2>
+            <p style="font-size: 15px; color: #4A5568; line-height: 1.6; text-align: justify; margin: 0 auto; max-width: 800px;">
+                Odoo's standard Inventory module provides current stock levels and basic movement reports, but lacks a chronological, line-by-line ledger view. The Stock Ledger Report acts like a bank passbook for your warehouse: showing the opening balance, every IN and OUT transaction with source and destination details, and a live running balance after each movement. Trace discrepancies instantly and provide auditors with a clean, transparent transaction trail.
+            </p>
+        </div>
+    </div>
+</section>
 
-    body {
-      font-family: 'Inter', sans-serif;
-      color: #1E293B;
-      background-color: #F8F5FF;
-      line-height: 1.6;
-      -webkit-font-smoothing: antialiased;
-    }
-
-    h1, h2, h3, h4, h5, h6 {
-      font-family: 'Inter', sans-serif;
-      color: #1E293B;
-      font-weight: 700;
-      line-height: 1.25;
-    }
-
-    .container {
-      width: 100%;
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 0 24px;
-    }
-
-    section {
-      padding: 80px 0;
-      background-color: #FFFFFF;
-      border-bottom: 1px solid #E9DDFE;
-      display: block;
-    }
-
-    section.bg-alternate {
-      background-color: #F8F5FF;
-    }
-
-    /* Custom classes for local state toggle (scripts toggle active class) */
-    .preview-img {
-      display: none;
-    }
-    .preview-img.active {
-      display: block;
-      animation: imgFadeIn 0.3s ease-in-out;
-    }
-
-    .tab-pane {
-      display: none;
-    }
-    .tab-pane.active {
-      display: flex !important;
-    }
-
-    @keyframes imgFadeIn {
-      from { opacity: 0; transform: scale(0.97); }
-      to { opacity: 1; transform: scale(1); }
-    }
-
-    /* FAQ Details elements styling resets */
-    details.faq-accordion summary::-webkit-details-marker {
-      display: none;
-    }
-    details.faq-accordion summary::after {
-      content: '\f078';
-      font-family: 'FontAwesome';
-      font-size: 11px;
-      color: #94A3B8;
-      transition: transform 0.2s ease;
-    }
-    details.faq-accordion[open] summary::after {
-      transform: rotate(180deg);
-      color: #7C3AED;
-    }
-    details.faq-accordion[open] {
-      border-color: #7C3AED !important;
-      box-shadow: 0 4px 6px -1px rgba(124, 58, 237, 0.05) !important;
-    }
-
-    /* Card Hover Micro-animations (Local Preview Only) */
-    .hover-card-effect {
-      transition: all 0.3s ease-in-out !important;
-    }
-    .hover-card-effect:hover {
-      transform: translateY(-4px) !important;
-      box-shadow: 0 10px 15px -3px rgba(124, 58, 237, 0.1) !important;
-      border-color: #7C3AED !important;
-    }
-
-    /* Infographic Connectors (Visible when layout is row/col on wide viewport) */
-    @media (min-width: 992px) {
-      .infographic-col-left .info-card-wrap {
-        position: relative;
-        text-align: right;
-      }
-      .infographic-col-left .info-card-wrap::after {
-        content: '';
-        position: absolute;
-        right: -30px;
-        top: 50%;
-        width: 30px;
-        border-top: 2px dashed #CBD5E1;
-        transform: translateY(-50%);
-        z-index: 1;
-      }
-      .infographic-col-right .info-card-wrap {
-        position: relative;
-        text-align: left;
-      }
-      .infographic-col-right .info-card-wrap::after {
-        content: '';
-        position: absolute;
-        left: -30px;
-        top: 50%;
-        width: 30px;
-        border-top: 2px dashed #CBD5E1;
-        transform: translateY(-50%);
-        z-index: 1;
-      }
-      .infographic-row-wrap {
-        position: relative;
-      }
-      .infographic-row-wrap::before {
-        content: '';
-        position: absolute;
-        top: 10%;
-        bottom: 10%;
-        left: 50%;
-        width: 2px;
-        border-left: 2px dashed #CBD5E1;
-        transform: translateX(-50%);
-        z-index: 0;
-      }
-    }
-  </style>
-</head>
-<body>
-
-  <!-- Wrapper to enforce global font and color styling across Odoo App Store -->
-  <div style="background-color: #F8F5FF; font-family: 'Inter', sans-serif; color: #1E293B; line-height: 1.6; padding: 20px 0;">
-
-    <!-- TOP SECTION: Hero, Problem Description & Sidebar Grid -->
-    <section class="bg-alternate" style="padding: 60px 0; background-color: #F8F5FF; border-bottom: 1px solid #E9DDFE; display: block;">
-      <div class="container">
-        <div class="row g-4">
-          
-          <!-- Left Column: Hero banner & Problem Overview -->
-          <div class="col-lg-8 d-flex flex-column" style="gap: 32px;">
+<!-- SECTION 3: KEY FEATURES -->
+<section class="oe_container" style="margin-bottom: 40px;">
+    <div class="oe_row oe_spaced" style="max-width: 900px; margin: 0 auto;">
+        <h2 class="oe_slogan" style="color: #71639E; font-weight: 700; font-size: 24px; margin-bottom: 30px; text-align: left;">Key Features</h2>
+        
+        <div class="row" style="display: flex; flex-wrap: wrap; margin-right: -15px; margin-left: -15px;">
             
-            <!-- Hero Card -->
-            <div class="card" style="background-color: #7C3AED; background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 50%, #5B21B6 100%); color: #FFFFFF; border-radius: 24px; padding: 40px; position: relative; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 10px 15px -3px rgba(124, 58, 237, 0.1); display: flex; flex-direction: column; gap: 20px;">
-              <span class="badge" style="align-self: flex-start; color: #FFFFFF; background-color: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.35); padding: 6px 12px; font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; border-radius: 50px; display: inline-block; font-family: 'Inter', sans-serif; margin-bottom: 0;">Odoo Inventory • Stock Management • Reporting</span>
-              <h1 class="hero-title" style="color: #FFFFFF; font-size: 38px; font-weight: 800; line-height: 1.2; margin-bottom: 0; font-family: 'Inter', sans-serif;">Your warehouse has a stock count.<br>Now give it a story.</h1>
-              <p class="hero-subtitle" style="color: rgba(255, 255, 255, 0.9); font-size: 16px; line-height: 1.6; margin-bottom: 0; font-family: 'Inter', sans-serif;">
-                A line-by-line history of every stock movement — incoming, outgoing, and running balance — giving you full, auditable warehouse visibility at any point in time.
-              </p>
-              <div class="hero-callout" style="background-color: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px; padding: 20px; font-size: 14.5px; color: rgba(255, 255, 255, 0.85); line-height: 1.6;">
-                <strong style="color: #FFFFFF;">Think</strong> of it like a bank statement for your warehouse stock: each row shows one transaction, where the goods moved from, where they went to, and how much stock remained after that movement.
-              </div>
-              <div class="hero-buttons" style="display: flex; gap: 12px; flex-wrap: wrap;">
-                <a href="#demo" target="_self" class="btn" style="display: inline-flex; align-items: center; justify-content: center; padding: 12px 24px; font-size: 14px; font-weight: 600; border-radius: 12px; text-decoration: none; cursor: pointer; font-family: 'Inter', sans-serif; background-color: #FFFFFF; color: #7C3AED; border: 1px solid #FFFFFF;">See How It Works <i class="fa fa-arrow-down" style="margin-left: 8px;"></i></a>
-                <a href="#faq" target="_self" class="btn" style="display: inline-flex; align-items: center; justify-content: center; padding: 12px 24px; font-size: 14px; font-weight: 600; border-radius: 12px; text-decoration: none; cursor: pointer; font-family: 'Inter', sans-serif; background-color: transparent; color: #FFFFFF; border: 1px solid rgba(255, 255, 255, 0.4);">Read FAQs</a>
-              </div>
-            </div>
-
-            <!-- Website Guide horizontal banner -->
-            <div class="card hover-card-effect" style="background-color: #FFFFFF; border: 1px solid #E9DDFE; border-radius: 16px; padding: 24px; display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; box-shadow: 0 1px 3px rgba(124, 58, 237, 0.05);">
-              <div class="guide-card-content" style="max-width: 500px;">
-                <span class="badge" style="display: inline-block; padding: 4px 8px; font-size: 10px; font-weight: 700; text-transform: uppercase; border-radius: 4px; color: #0284C7; background-color: #E0F2FE; margin-bottom: 8px; font-family: 'Inter', sans-serif;">EXTENDED READING</span>
-                <h3 style="font-size: 18px; margin-bottom: 6px; font-weight: 700; color: #1E293B; font-family: 'Inter', sans-serif;">Read our complete guide on the Ahex Technologies website</h3>
-                <p style="font-size: 13.5px; color: #64748B; margin-bottom: 0; line-height: 1.6;">Our website article covers everything in deeper detail — balance calculation formulas, industry use cases, FAQs, and a full technical breakdown.</p>
-              </div>
-              <div>
-                <a href="https://ahex.co" target="_blank" class="btn" style="display: inline-flex; align-items: center; justify-content: center; padding: 12px 24px; font-size: 14px; font-weight: 600; border-radius: 12px; text-decoration: none; cursor: pointer; font-family: 'Inter', sans-serif; background-color: #0284C7; color: #FFFFFF; border: 1px solid #0284C7; white-space: nowrap;">Read Full Guide</a>
-              </div>
-            </div>
-
-            <!-- Problem Section -->
-            <div class="problem-section" style="padding-top: 10px;">
-              <h3 style="font-size: 24px; margin-bottom: 16px; position: relative; display: inline-block; font-weight: 700; color: #1E293B; font-family: 'Inter', sans-serif;">
-                The Problem Odoo Doesn't Solve Out of the Box
-                <span style="content: ''; position: absolute; bottom: -4px; left: 0; width: 30px; height: 3px; background-color: #7C3AED; border-radius: 2px;"></span>
-              </h3>
-              <p style="font-size: 14.5px; color: #64748B; margin-bottom: 16px; line-height: 1.6;">
-                In accounting, a ledger shows every transaction affecting a balance — debit, credit, and running total. A stock ledger applies the same principle to your warehouse inventory. Odoo's standard Inventory module gives you product stock levels and basic move reports — but it doesn't give you the full chronological, line-by-line ledger view that auditors, warehouse managers, and business owners actually need.
-              </p>
-              <p style="font-size: 14.5px; color: #64748B; margin-bottom: 24px; line-height: 1.6;">
-                When your accounts team asks why the closing stock doesn't match purchase orders, or when an audit requires you to trace a discrepancy back through three months of warehouse activity, the native reports leave you piecing it together manually.
-              </p>
-              
-              <div class="card problem-card" style="border-left: 4px solid #7C3AED; background-color: #FFFFFF; border-radius: 0 16px 16px 0; padding: 24px; border-top: 1px solid #E9DDFE; border-right: 1px solid #E9DDFE; border-bottom: 1px solid #E9DDFE; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(124, 58, 237, 0.05);">
-                <p style="margin-bottom: 0; font-style: italic; color: #1E293B; font-weight: 500; font-size: 14.5px; line-height: 1.6;">
-                  <strong style="color: #7C3AED;">The Stock Ledger Report closes that gap.</strong> It gives every product in your inventory its own financial-style ledger: opening balance, every IN and OUT transaction with source and destination, and a live running balance after each movement — for any date range you choose.
-                </p>
-              </div>
-
-              <div class="card problem-card" style="border-left: 4px solid #1E293B; background-color: #FFFFFF; border-radius: 0 16px 16px 0; padding: 24px; border-top: 1px solid #E9DDFE; border-right: 1px solid #E9DDFE; border-bottom: 1px solid #E9DDFE; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(124, 58, 237, 0.05);">
-                <p style="margin-bottom: 0; font-style: italic; color: #1E293B; font-weight: 500; font-size: 14.5px; line-height: 1.6;">
-                  <strong>Quick summary:</strong> If you've ever asked "where did my stock go?", "what was my opening inventory last month?", or "why doesn't my closing balance match?" — this module is exactly what you need. It works like a bank passbook for your warehouse.
-                </p>
-              </div>
-            </div>
-
-          </div>
-
-          <!-- Right Column: Sidebar Cards (At a glance, Support link, Tags etc) -->
-          <div class="col-lg-4 d-flex flex-column" style="gap: 24px;">
-            
-            <!-- Support Widget Card (Blue-Grey Background) -->
-            <div class="card" style="background-color: #EDF2F6; border: 1px solid #E9DDFE; border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(124, 58, 237, 0.05);">
-              <h3 style="font-size: 18px; color: #1E293B; font-weight: 700; margin-bottom: 8px; font-family: 'Inter', sans-serif;">Need Support?</h3>
-              <p style="font-size: 13.5px; color: #64748B; margin-bottom: 16px; line-height: 1.6;">Purchased this module? Our team helps with installation and setup.</p>
-              <a href="mailto:support@ahex.co" class="btn" style="background-color: #7C3AED; color: #FFFFFF; border: 1px solid #7C3AED; width: 100%; border-radius: 8px; font-weight: 600; padding: 12px 20px; text-align: center; text-decoration: none; display: inline-block; transition: all 0.2s ease-in-out; font-family: 'Inter', sans-serif;">Open Support Ticket</a>
-            </div>
-
-            <!-- At a Glance Checklist -->
-            <div class="card" style="background-color: #FFFFFF; border: 1px solid #E9DDFE; border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(124, 58, 237, 0.05);">
-              <h3 style="font-size: 18px; margin-bottom: 16px; border-bottom: 1px solid #E9DDFE; padding-bottom: 10px; font-weight: 700; color: #1E293B; font-family: 'Inter', sans-serif;">At a Glance</h3>
-              <ul style="list-style: none; padding-left: 0; margin-bottom: 0;">
-                <li style="font-size: 13.5px; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; color: #64748B;"><i class="fa fa-check-circle" style="color: #7C3AED; font-size: 14px; flex-shrink: 0;"></i> No configuration needed</li>
-                <li style="font-size: 13.5px; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; color: #64748B;"><i class="fa fa-check-circle" style="color: #7C3AED; font-size: 14px; flex-shrink: 0;"></i> Works out of the box</li>
-                <li style="font-size: 13.5px; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; color: #64748B;"><i class="fa fa-check-circle" style="color: #7C3AED; font-size: 14px; flex-shrink: 0;"></i> Zero external dependencies</li>
-                <li style="font-size: 13.5px; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; color: #64748B;"><i class="fa fa-check-circle" style="color: #7C3AED; font-size: 14px; flex-shrink: 0;"></i> Colour-coded IN / OUT rows</li>
-                <li style="font-size: 13.5px; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; color: #64748B;"><i class="fa fa-check-circle" style="color: #7C3AED; font-size: 14px; flex-shrink: 0;"></i> Auto opening balance calc</li>
-                <li style="font-size: 13.5px; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; color: #64748B;"><i class="fa fa-check-circle" style="color: #7C3AED; font-size: 14px; flex-shrink: 0;"></i> Community & Enterprise</li>
-                <li style="font-size: 13.5px; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; color: #64748B;"><i class="fa fa-check-circle" style="color: #7C3AED; font-size: 14px; flex-shrink: 0;"></i> 201 lines — auditable code</li>
-                <li style="font-size: 13.5px; margin-bottom: 0; display: flex; align-items: center; gap: 10px; color: #64748B;"><i class="fa fa-check-circle" style="color: #7C3AED; font-size: 14px; flex-shrink: 0;"></i> Smart pre-filled date wizard</li>
-              </ul>
-            </div>
-
-            <!-- Module Tags List -->
-            <div class="card" style="background-color: #FFFFFF; border: 1px solid #E9DDFE; border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(124, 58, 237, 0.05);">
-              <h3 style="font-size: 18px; margin-bottom: 16px; border-bottom: 1px solid #E9DDFE; padding-bottom: 10px; font-weight: 700; color: #1E293B; font-family: 'Inter', sans-serif;">Module Tags</h3>
-              <div style="display: flex; flex-wrap: wrap; gap: 6px;">
-                <span style="font-size: 11.5px; background-color: #F8F5FF; border: 1px solid #E9DDFE; padding: 4px 10px; border-radius: 50px; color: #1E293B; font-weight: 500;">stock ledger</span>
-                <span style="font-size: 11.5px; background-color: #F8F5FF; border: 1px solid #E9DDFE; padding: 4px 10px; border-radius: 50px; color: #1E293B; font-weight: 500;">inventory movement</span>
-                <span style="font-size: 11.5px; background-color: #F8F5FF; border: 1px solid #E9DDFE; padding: 4px 10px; border-radius: 50px; color: #1E293B; font-weight: 500;">running balance</span>
-                <span style="font-size: 11.5px; background-color: #F8F5FF; border: 1px solid #E9DDFE; padding: 4px 10px; border-radius: 50px; color: #1E293B; font-weight: 500;">stock movement report</span>
-                <span style="font-size: 11.5px; background-color: #F8F5FF; border: 1px solid #E9DDFE; padding: 4px 10px; border-radius: 50px; color: #1E293B; font-weight: 500;">inventory audit</span>
-                <span style="font-size: 11.5px; background-color: #F8F5FF; border: 1px solid #E9DDFE; padding: 4px 10px; border-radius: 50px; color: #1E293B; font-weight: 500;">warehouse reporting</span>
-                <span style="font-size: 11.5px; background-color: #F8F5FF; border: 1px solid #E9DDFE; padding: 4px 10px; border-radius: 50px; color: #1E293B; font-weight: 500;">opening balance</span>
-                <span style="font-size: 11.5px; background-color: #F8F5FF; border: 1px solid #E9DDFE; padding: 4px 10px; border-radius: 50px; color: #1E293B; font-weight: 500;">stock reconciliation</span>
-                <span style="font-size: 11.5px; background-color: #F8F5FF; border: 1px solid #E9DDFE; padding: 4px 10px; border-radius: 50px; color: #1E293B; font-weight: 500;">daily stock report</span>
-                <span style="font-size: 11.5px; background-color: #F8F5FF; border: 1px solid #E9DDFE; padding: 4px 10px; border-radius: 50px; color: #1E293B; font-weight: 500;">inventory traceability</span>
-                <span style="font-size: 11.5px; background-color: #F8F5FF; border: 1px solid #E9DDFE; padding: 4px 10px; border-radius: 50px; color: #1E293B; font-weight: 500;">product movement</span>
-                <span style="font-size: 11.5px; background-color: #F8F5FF; border: 1px solid #E9DDFE; padding: 4px 10px; border-radius: 50px; color: #1E293B; font-weight: 500;">Ahex Technologies</span>
-              </div>
-            </div>
-
-            <!-- Direct Links -->
-            <div class="card" style="background-color: #FFFFFF; border: 1px solid #E9DDFE; border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(124, 58, 237, 0.05);">
-              <h3 style="font-size: 18px; margin-bottom: 16px; border-bottom: 1px solid #E9DDFE; padding-bottom: 10px; font-weight: 700; color: #1E293B; font-family: 'Inter', sans-serif;">Direct Links</h3>
-              <div style="display: flex; flex-direction: column; gap: 12px;">
-                <div style="font-size: 12.5px; word-break: break-all;">
-                  <strong style="display: block; color: #1E293B; margin-bottom: 2px;">App Store Listing:</strong>
-                  <a href="https://apps.odoo.com/apps/modules/19.0/daily_odoo_stock_ledger_report" target="_blank" style="color: #7C3AED; text-decoration: none; font-weight: 600;">apps.odoo.com/apps/modules/19.0/daily_odoo_stock_ledger_report</a>
+            <!-- Feature 1 -->
+            <div class="col-md-6" style="flex: 0 0 50%; max-width: 50%; padding: 15px; box-sizing: border-box;">
+                <div style="background-color: #F8F9FA; border: 1px solid #E2E8F0; border-radius: 8px; padding: 20px; height: 100%;">
+                    <div style="font-size: 24px; margin-bottom: 10px; color: #71639E; display: flex; align-items: center; justify-content: flex-start; height: 30px;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    </div>
+                    <h4 style="font-weight: 700; font-size: 16px; margin: 0 0 8px; color: #2D3748;">Line-by-Line Movement History</h4>
+                    <p style="font-size: 13.5px; color: #718096; margin: 0; line-height: 1.5;">Tracks every single stock transaction chronologically with detailed from/to locations.</p>
                 </div>
-                <div style="font-size: 12.5px; word-break: break-all;">
-                  <strong style="display: block; color: #1E293B; margin-bottom: 2px;">Website Full Guide:</strong>
-                  <a href="https://ahex.co" target="_blank" style="color: #7C3AED; text-decoration: none; font-weight: 600;">Read Full Product Guide <i class="fa fa-arrow-right" style="font-size: 10px; margin-left: 2px;"></i></a>
+            </div>
+
+            <!-- Feature 2 -->
+            <div class="col-md-6" style="flex: 0 0 50%; max-width: 50%; padding: 15px; box-sizing: border-box;">
+                <div style="background-color: #F8F9FA; border: 1px solid #E2E8F0; border-radius: 8px; padding: 20px; height: 100%;">
+                    <div style="font-size: 24px; margin-bottom: 10px; color: #71639E; display: flex; align-items: center; justify-content: flex-start; height: 30px;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                    </div>
+                    <h4 style="font-weight: 700; font-size: 16px; margin: 0 0 8px; color: #2D3748;">Running Balance Calculation</h4>
+                    <p style="font-size: 13.5px; color: #718096; margin: 0; line-height: 1.5;">Automatically calculates and displays a cumulative stock balance after every transaction completes.</p>
                 </div>
-              </div>
             </div>
 
-          </div>
-        </div>
-      </div>
-    </section>
+            <!-- Feature 3 -->
+            <div class="col-md-6" style="flex: 0 0 50%; max-width: 50%; padding: 15px; box-sizing: border-box;">
+                <div style="background-color: #F8F9FA; border: 1px solid #E2E8F0; border-radius: 8px; padding: 20px; height: 100%;">
+                    <div style="font-size: 24px; margin-bottom: 10px; color: #71639E; display: flex; align-items: center; justify-content: flex-start; height: 30px;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                    </div>
+                    <h4 style="font-weight: 700; font-size: 16px; margin: 0 0 8px; color: #2D3748;">Automatic Opening Balance</h4>
+                    <p style="font-size: 13.5px; color: #718096; margin: 0; line-height: 1.5;">Computes the opening balance correctly for any selected date range by summing all prior done stock moves.</p>
+                </div>
+            </div>
 
-    <!-- SECTION 2: Infographic - Who Needs Stock Ledger -->
-    <section style="padding: 80px 0; background-color: #F8F5FF; border-bottom: 1px solid #E9DDFE; display: block;">
-      <div class="container">
-        <div style="text-align: center; max-width: 800px; margin: 0 auto 50px auto;">
-          <h2 style="font-size: 32px; margin-bottom: 16px; font-weight: 700; color: #1E293B; font-family: 'Inter', sans-serif; position: relative; display: inline-block;">
-            Who Needs a Stock Ledger Report in Odoo?
-            <span style="content: ''; position: absolute; bottom: -6px; left: 0; width: 40px; height: 3px; background-color: #7C3AED; border-radius: 2px;"></span>
-          </h2>
-          <p style="color: #64748B; font-size: 16px; line-height: 1.6;">This module solves a real pain point that comes up across industries. Here are the most common scenarios where businesses reach for a stock ledger:</p>
-        </div>
+            <!-- Feature 4 -->
+            <div class="col-md-6" style="flex: 0 0 50%; max-width: 50%; padding: 15px; box-sizing: border-box;">
+                <div style="background-color: #F8F9FA; border: 1px solid #E2E8F0; border-radius: 8px; padding: 20px; height: 100%;">
+                    <div style="font-size: 24px; margin-bottom: 10px; color: #71639E; display: flex; align-items: center; justify-content: flex-start; height: 30px;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 11 12 6 7 11"></polyline><polyline points="17 18 12 13 7 18"></polyline></svg>
+                    </div>
+                    <h4 style="font-weight: 700; font-size: 16px; margin: 0 0 8px; color: #2D3748;">Color-Coded IN/OUT Rows</h4>
+                    <p style="font-size: 13.5px; color: #718096; margin: 0; line-height: 1.5;">Highlight incoming and outgoing shipments in clear green and red indicators for rapid scanning and auditing.</p>
+                </div>
+            </div>
 
-        <div class="row align-items-center infographic-row-wrap g-4">
-          
-          <!-- Left Column Cards -->
-          <div class="col-lg-5 col-md-6 order-1 infographic-col-left d-flex flex-column" style="gap: 20px; z-index: 2;">
-            
-            <div class="info-card-wrap">
-              <div class="card hover-card-effect" style="background-color: #FFFFFF; border: 1px solid #E9DDFE; border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(124, 58, 237, 0.05); text-align: left;">
-                <h4 style="font-size: 16px; color: #7C3AED; margin-bottom: 6px; font-weight: 700; font-family: 'Inter', sans-serif;">Manufacturing</h4>
-                <p style="font-size: 13.5px; color: #64748B; margin-bottom: 0; line-height: 1.6;">Track raw material consumption per production batch and reconcile theoretical vs. actual usage.</p>
-              </div>
+            <!-- Feature 5 -->
+            <div class="col-md-6" style="flex: 0 0 50%; max-width: 50%; padding: 15px; box-sizing: border-box;">
+                <div style="background-color: #F8F9FA; border: 1px solid #E2E8F0; border-radius: 8px; padding: 20px; height: 100%;">
+                    <div style="font-size: 24px; margin-bottom: 10px; color: #71639E; display: flex; align-items: center; justify-content: flex-start; height: 30px;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                    </div>
+                    <h4 style="font-weight: 700; font-size: 16px; margin: 0 0 8px; color: #2D3748;">No External Dependencies</h4>
+                    <p style="font-size: 13.5px; color: #718096; margin: 0; line-height: 1.5;">Runs entirely on your local Odoo server database with 100% security, privacy, and zero third-party calls.</p>
+                </div>
             </div>
-            
-            <div class="info-card-wrap">
-              <div class="card hover-card-effect" style="background-color: #FFFFFF; border: 1px solid #E9DDFE; border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(124, 58, 237, 0.05); text-align: left;">
-                <h4 style="font-size: 16px; color: #7C3AED; margin-bottom: 6px; font-weight: 700; font-family: 'Inter', sans-serif;">Retail & Wholesale</h4>
-                <p style="font-size: 13.5px; color: #64748B; margin-bottom: 0; line-height: 1.6;">Audit stock movement between warehouse, shop floor, and delivery — especially for high-value SKUs.</p>
-              </div>
-            </div>
-            
-            <div class="info-card-wrap">
-              <div class="card hover-card-effect" style="background-color: #FFFFFF; border: 1px solid #E9DDFE; border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(124, 58, 237, 0.05); text-align: left;">
-                <h4 style="font-size: 16px; color: #7C3AED; margin-bottom: 6px; font-weight: 700; font-family: 'Inter', sans-serif;">Food & Beverage</h4>
-                <p style="font-size: 13.5px; color: #64748B; margin-bottom: 0; line-height: 1.6;">FIFO traceability requirements — full consumption trail by product and date range for regulatory compliance.</p>
-              </div>
-            </div>
-            
-            <div class="info-card-wrap">
-              <div class="card hover-card-effect" style="background-color: #FFFFFF; border: 1px solid #E9DDFE; border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(124, 58, 237, 0.05); text-align: left;">
-                <h4 style="font-size: 16px; color: #7C3AED; margin-bottom: 6px; font-weight: 700; font-family: 'Inter', sans-serif;">Pharma & Healthcare</h4>
-                <p style="font-size: 13.5px; color: #64748B; margin-bottom: 0; line-height: 1.6;">Maintain regulatory-compliant inventory records for audits, compliance inspections, and traceability requirements.</p>
-              </div>
-            </div>
-            
-          </div>
 
-          <!-- Center Odoo Logo Node -->
-          <div class="col-lg-2 d-none d-lg-flex justify-content-center order-2" style="position: relative; z-index: 2;">
-            <div style="width: 90px; height: 90px; border-radius: 50%; background-color: #7C3AED; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 800; box-shadow: 0 0 0 10px #E9DDFE; font-family: 'Inter', sans-serif;">odoo</div>
-          </div>
-
-          <!-- Right Column Cards -->
-          <div class="col-lg-5 col-md-6 order-3 infographic-col-right d-flex flex-column" style="gap: 20px; z-index: 2;">
-            
-            <div class="info-card-wrap">
-              <div class="card hover-card-effect" style="background-color: #FFFFFF; border: 1px solid #E9DDFE; border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(124, 58, 237, 0.05); text-align: left;">
-                <h4 style="font-size: 16px; color: #7C3AED; margin-bottom: 6px; font-weight: 700; font-family: 'Inter', sans-serif;">3PL & Logistics</h4>
-                <p style="font-size: 13.5px; color: #64748B; margin-bottom: 0; line-height: 1.6;">Provide clients with transparent, transaction-level stock reports to prove fulfilment accuracy.</p>
-              </div>
+            <!-- Feature 6 -->
+            <div class="col-md-6" style="flex: 0 0 50%; max-width: 50%; padding: 15px; box-sizing: border-box;">
+                <div style="background-color: #F8F9FA; border: 1px solid #E2E8F0; border-radius: 8px; padding: 20px; height: 100%;">
+                    <div style="font-size: 24px; margin-bottom: 10px; color: #71639E; display: flex; align-items: center; justify-content: flex-start; height: 30px;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                    </div>
+                    <h4 style="font-weight: 700; font-size: 16px; margin: 0 0 8px; color: #2D3748;">Excel &amp; PDF Export Ready</h4>
+                    <p style="font-size: 13.5px; color: #718096; margin: 0; line-height: 1.5;">Works seamlessly with native Odoo actions to instantly print reports or export data to spreadsheet formats.</p>
+                </div>
             </div>
-            
-            <div class="info-card-wrap">
-              <div class="card hover-card-effect" style="background-color: #FFFFFF; border: 1px solid #E9DDFE; border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(124, 58, 237, 0.05); text-align: left;">
-                <h4 style="font-size: 16px; color: #7C3AED; margin-bottom: 6px; font-weight: 700; font-family: 'Inter', sans-serif;">Odoo Implementation Partners</h4>
-                <p style="font-size: 13.5px; color: #64748B; margin-bottom: 0; line-height: 1.6;">Clients who need ledger-style reporting as part of a wider ERP rollout — ready to deploy, no custom dev needed.</p>
-              </div>
-            </div>
-            
-            <div class="info-card-wrap">
-              <div class="card hover-card-effect" style="background-color: #FFFFFF; border: 1px solid #E9DDFE; border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(124, 58, 237, 0.05); text-align: left;">
-                <h4 style="font-size: 16px; color: #7C3AED; margin-bottom: 6px; font-weight: 700; font-family: 'Inter', sans-serif;">Spare Parts & MRO</h4>
-                <p style="font-size: 13.5px; color: #64748B; margin-bottom: 0; line-height: 1.6;">Track individual component usage, ensuring critical parts are always available while minimising overstock.</p>
-              </div>
-            </div>
-            
-            <div class="info-card-wrap">
-              <div class="card hover-card-effect" style="background-color: #FFFFFF; border: 1px solid #E9DDFE; border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(124, 58, 237, 0.05); text-align: left;">
-                <h4 style="font-size: 16px; color: #7C3AED; margin-bottom: 6px; font-weight: 700; font-family: 'Inter', sans-serif;">Accountants & Finance</h4>
-                <p style="font-size: 13.5px; color: #64748B; margin-bottom: 0; line-height: 1.6;">Reconcile the closing stock figure on the balance sheet with actual warehouse movements — in a format they already understand.</p>
-              </div>
-            </div>
-            
-          </div>
 
         </div>
-      </div>
-    </section>
+    </div>
+</section>
 
-    <!-- SECTION 3: Sample Ledger Demo Table -->
-    <section style="padding: 80px 0; background-color: #FFFFFF; border-bottom: 1px solid #E9DDFE; display: block;">
-      <div class="container">
-        <div style="text-align: center; max-width: 800px; margin: 0 auto 50px auto;">
-          <h2 style="font-size: 32px; margin-bottom: 16px; font-weight: 700; color: #1E293B; font-family: 'Inter', sans-serif; position: relative; display: inline-block;">
-            How the Report Looks: A Sample Ledger
-            <span style="content: ''; position: absolute; bottom: -6px; left: 0; width: 40px; height: 3px; background-color: #7C3AED; border-radius: 2px;"></span>
-          </h2>
-          <p style="color: #64748B; font-size: 16px; line-height: 1.6;">Below is an example of the Stock Ledger Report output for a single product. Each row is one completed stock movement. The balance column is cumulative — it never resets within the report period.</p>
+<!-- SECTION 4: INTERACTIVE WIZARD SCREENSHOT -->
+<section class="oe_container" style="margin-bottom: 40px;">
+    <div class="oe_row oe_spaced" style="max-width: 900px; margin: 0 auto; text-align: center;">
+        <h2 class="oe_slogan" style="color: #71639E; font-weight: 700; font-size: 24px; margin-bottom: 15px;">Smart Date Filter Wizard</h2>
+        <p style="font-size: 15px; color: #4A5568; line-height: 1.6; margin-bottom: 20px; text-align: justify; max-width: 800px; margin-left: auto; margin-right: auto;">
+            Launch the stock ledger report and input your desired date filters. The wizard comes pre-filled with the previous full calendar month, so you can execute the calculation with a single click.
+        </p>
+        <img class="img-responsive oe_picture oe_screenshot" src="img_1.png" alt="Date Filter Wizard Screenshot" style="max-width: 100%; border-radius: 8px; border: 1px solid #E2E8F0; box-shadow: 0 4px 12px #0000000D; margin-top: 10px;">
+    </div>
+</section>
+
+<!-- SECTION 5: DETAILED STOCK LEDGER SCREENSHOT -->
+<section class="oe_container oe_dark" style="margin-bottom: 40px; padding: 0;">
+    <div style="background-color: #F8F9FA; border-radius: 12px; padding: 35px 30px; border: 1px solid #E2E8F0;">
+        <div class="oe_row oe_spaced" style="max-width: 900px; margin: 0 auto; text-align: center;">
+            <h2 class="oe_slogan" style="color: #71639E; font-weight: 700; font-size: 24px; margin-bottom: 15px;">Real-Time Running Balance</h2>
+            <p style="font-size: 15px; color: #4A5568; line-height: 1.6; margin-bottom: 20px; text-align: justify; max-width: 800px; margin-left: auto; margin-right: auto;">
+                Once computed, the ledger outputs a detailed tabular history of every stock move. Review exact transaction times, source locations, destination points, color-coded IN/OUT amounts, and a running cumulative stock balance.
+            </p>
+            <img class="img-responsive oe_picture oe_screenshot" src="img_4.png" alt="Stock Ledger Report Output Screenshot" style="max-width: 100%; border-radius: 8px; border: 1px solid #E2E8F0; box-shadow: 0 4px 12px #0000000D; margin-top: 10px;">
+        </div>
+    </div>
+</section>
+
+<!-- SECTION 6: HOW IT WORKS -->
+<section class="oe_container" style="margin-bottom: 40px;">
+    <div class="oe_row oe_spaced" style="max-width: 900px; margin: 0 auto;">
+        <h2 class="oe_slogan" style="color: #71639E; font-weight: 700; font-size: 24px; margin-bottom: 25px; text-align: left;">Step-by-Step Workflow</h2>
+        
+        <div style="margin-top: 20px;">
+            <!-- Step 1 -->
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; border: none; background: transparent;">
+                <tr>
+                    <td style="width: 45px; vertical-align: top; padding: 0; border: none; background: transparent;">
+                        <div style="width: 32px; height: 32px; border-radius: 50%; background-color: #71639E; color: #FFFFFF; text-align: center; line-height: 32px; font-weight: 700; font-size: 14px;">1</div>
+                    </td>
+                    <td style="vertical-align: top; padding: 0 0 0 10px; border: none; background: transparent; text-align: left;">
+                        <h4 style="font-weight: 700; font-size: 15px; margin: 0 0 4px; color: #2D3748; padding: 0; line-height: 1.3;">Open Stock Ledger Menu</h4>
+                        <p style="font-size: 13.5px; color: #4A5568; margin: 0; line-height: 1.5; padding: 0;">Navigate directly to the new Stock Ledger reporting menu item inside the Inventory application.</p>
+                    </td>
+                </tr>
+            </table>
+
+            <!-- Step 2 -->
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; border: none; background: transparent;">
+                <tr>
+                    <td style="width: 45px; vertical-align: top; padding: 0; border: none; background: transparent;">
+                        <div style="width: 32px; height: 32px; border-radius: 50%; background-color: #71639E; color: #FFFFFF; text-align: center; line-height: 32px; font-weight: 700; font-size: 14px;">2</div>
+                    </td>
+                    <td style="vertical-align: top; padding: 0 0 0 10px; border: none; background: transparent; text-align: left;">
+                        <h4 style="font-weight: 700; font-size: 15px; margin: 0 0 4px; color: #2D3748; padding: 0; line-height: 1.3;">Set Date Range</h4>
+                        <p style="font-size: 13.5px; color: #4A5568; margin: 0; line-height: 1.5; padding: 0;">Enter your desired start and end dates inside the pre-filled calendar wizard and click Generate.</p>
+                    </td>
+                </tr>
+            </table>
+
+            <!-- Step 3 -->
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; border: none; background: transparent;">
+                <tr>
+                    <td style="width: 45px; vertical-align: top; padding: 0; border: none; background: transparent;">
+                        <div style="width: 32px; height: 32px; border-radius: 50%; background-color: #71639E; color: #FFFFFF; text-align: center; line-height: 32px; font-weight: 700; font-size: 14px;">3</div>
+                    </td>
+                    <td style="vertical-align: top; padding: 0 0 0 10px; border: none; background: transparent; text-align: left;">
+                        <h4 style="font-weight: 700; font-size: 15px; margin: 0 0 4px; color: #2D3748; padding: 0; line-height: 1.3;">Browse Product List</h4>
+                        <p style="font-size: 13.5px; color: #4A5568; margin: 0; line-height: 1.5; padding: 0;">Filter or search the standard product list. The date parameters are stored in your active session context.</p>
+                    </td>
+                </tr>
+            </table>
+
+            <!-- Step 4 -->
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 10px; border: none; background: transparent;">
+                <tr>
+                    <td style="width: 45px; vertical-align: top; padding: 0; border: none; background: transparent;">
+                        <div style="width: 32px; height: 32px; border-radius: 50%; background-color: #71639E; color: #FFFFFF; text-align: center; line-height: 32px; font-weight: 700; font-size: 14px;">4</div>
+                    </td>
+                    <td style="vertical-align: top; padding: 0 0 0 10px; border: none; background: transparent; text-align: left;">
+                        <h4 style="font-weight: 700; font-size: 15px; margin: 0 0 4px; color: #2D3748; padding: 0; line-height: 1.3;">View &amp; Audit Ledger</h4>
+                        <p style="font-size: 13.5px; color: #4A5568; margin: 0; line-height: 1.5; padding: 0;">Click the 'View Ledger' action button on any product row to instantly generate and analyze its historical movements.</p>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</section>
+
+<!-- SECTION 7: INSTANT ACTION ACCESS -->
+<section class="oe_container" style="margin-bottom: 40px;">
+    <div class="oe_row oe_spaced" style="max-width: 900px; margin: 0 auto;">
+        <h2 class="oe_slogan" style="color: #71639E; font-weight: 700; font-size: 24px; margin-bottom: 15px;">Instant Action Access</h2>
+        <p style="font-size: 15px; color: #4A5568; line-height: 1.6; margin-bottom: 25px;">
+            The module adds a direct 'View Ledger' action button on product list views. Access any product's historical ledger instantly without complex navigation or search steps.
+        </p>
+
+        <div style="text-align: center; margin-top: 10px;">
+            <img class="img-responsive oe_picture oe_screenshot" src="img_3.png" alt="View Ledger Action Button Screenshot" style="max-width: 100%; border-radius: 8px; border: 1px solid #E2E8F0; box-shadow: 0 4px 12px #0000000D;">
+        </div>
+    </div>
+</section>
+
+<!-- SECTION 8: TECHNICAL CONFIGURATION & SUMMARY -->
+<section class="oe_container" style="margin-bottom: 40px;">
+    <div class="oe_row oe_spaced" style="max-width: 900px; margin: 0 auto;">
+        <h2 class="oe_slogan" style="color: #71639E; font-weight: 700; font-size: 24px; margin-bottom: 20px;">Technical Details</h2>
+        
+        <div style="background-color: #EDF2F7; border-left: 4px solid #71639E; border-radius: 0 6px 6px 0; padding: 15px 20px; margin-bottom: 25px;">
+            <div style="font-weight: bold; color: #4A5568; margin-bottom: 4px; font-size: 14.5px;">Prerequisite Setup</div>
+            <p style="font-size: 13.5px; color: #4A5568; margin: 0; line-height: 1.5;">
+                Make sure you have completed stock movements (in 'Done' state) in your Odoo database. The ledger calculates opening balance and running transactions specifically for done state stock moves to maintain absolute audit integrity.
+            </p>
         </div>
 
-        <div style="overflow-x: auto; border: 1px solid #E9DDFE; border-radius: 16px; box-shadow: 0 1px 3px rgba(124, 58, 237, 0.05); margin-bottom: 24px; background-color: #FFFFFF;">
-          <table style="width: 100%; border-collapse: collapse; background-color: #FFFFFF; text-align: left; font-size: 13.5px;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 15px;">
             <thead>
-              <tr>
-                <th style="background-color: #F1F5F9; color: #1E293B; font-weight: 700; padding: 14px 18px; border-bottom: 1px solid #E9DDFE; font-family: 'Inter', sans-serif;">DATE</th>
-                <th style="background-color: #F1F5F9; color: #1E293B; font-weight: 700; padding: 14px 18px; border-bottom: 1px solid #E9DDFE; font-family: 'Inter', sans-serif;">FROM</th>
-                <th style="background-color: #F1F5F9; color: #1E293B; font-weight: 700; padding: 14px 18px; border-bottom: 1px solid #E9DDFE; font-family: 'Inter', sans-serif;">TO</th>
-                <th style="width: 100px; text-align: center; background-color: #F1F5F9; color: #1E293B; font-weight: 700; padding: 14px 18px; border-bottom: 1px solid #E9DDFE; font-family: 'Inter', sans-serif;">IN</th>
-                <th style="width: 100px; text-align: center; background-color: #F1F5F9; color: #1E293B; font-weight: 700; padding: 14px 18px; border-bottom: 1px solid #E9DDFE; font-family: 'Inter', sans-serif;">OUT</th>
-                <th style="text-align: right; background-color: #F1F5F9; color: #1E293B; font-weight: 700; padding: 14px 18px; border-bottom: 1px solid #E9DDFE; font-family: 'Inter', sans-serif;">BALANCE</th>
-              </tr>
+                <tr style="background-color: #F7FAFC; border-bottom: 2px solid #E2E8F0;">
+                    <th style="width: 30%; text-align: left; padding: 10px 15px; font-weight: 600;">Information</th>
+                    <th style="text-align: left; padding: 10px 15px; font-weight: 600;">Detail</th>
+                </tr>
             </thead>
             <tbody>
-              <tr style="background-color: #F8FAFC; font-style: italic;">
-                <td style="padding: 14px 18px; border-bottom: 1px solid #E9DDFE; color: #1E293B; font-weight: 600;">Opening Balance</td>
-                <td style="padding: 14px 18px; border-bottom: 1px solid #E9DDFE; color: #64748B;">—</td>
-                <td style="padding: 14px 18px; border-bottom: 1px solid #E9DDFE; color: #64748B;">—</td>
-                <td style="text-align: center; padding: 14px 18px; border-bottom: 1px solid #E9DDFE; color: #64748B;">—</td>
-                <td style="text-align: center; padding: 14px 18px; border-bottom: 1px solid #E9DDFE; color: #64748B;">—</td>
-                <td style="text-align: right; padding: 14px 18px; border-bottom: 1px solid #E9DDFE; font-weight: 700; color: #7C3AED;">100 units</td>
-              </tr>
-              <tr>
-                <td style="padding: 14px 18px; border-bottom: 1px solid #E9DDFE; color: #1E293B;">01 Apr 2025</td>
-                <td style="padding: 14px 18px; border-bottom: 1px solid #E9DDFE; color: #1E293B;">Suppliers</td>
-                <td style="padding: 14px 18px; border-bottom: 1px solid #E9DDFE; color: #1E293B;">WH/Stock</td>
-                <td style="text-align: center; padding: 14px 18px; border-bottom: 1px solid #E9DDFE;"><span class="pill-badge pill-in" style="display: inline-block; padding: 4px 10px; font-size: 12px; font-weight: 700; border-radius: 4px; font-family: 'Inter', sans-serif; background-color: #D1FAE5; color: #10B981;">+50</span></td>
-                <td style="text-align: center; padding: 14px 18px; border-bottom: 1px solid #E9DDFE; color: #64748B;">—</td>
-                <td style="text-align: right; padding: 14px 18px; border-bottom: 1px solid #E9DDFE; font-weight: 700; color: #7C3AED;">150 units</td>
-              </tr>
-              <tr>
-                <td style="padding: 14px 18px; border-bottom: 1px solid #E9DDFE; color: #1E293B;">05 Apr 2025</td>
-                <td style="padding: 14px 18px; border-bottom: 1px solid #E9DDFE; color: #1E293B;">WH/Stock</td>
-                <td style="padding: 14px 18px; border-bottom: 1px solid #E9DDFE; color: #1E293B;">Customers</td>
-                <td style="text-align: center; padding: 14px 18px; border-bottom: 1px solid #E9DDFE; color: #64748B;">—</td>
-                <td style="text-align: center; padding: 14px 18px; border-bottom: 1px solid #E9DDFE;"><span class="pill-badge pill-out" style="display: inline-block; padding: 4px 10px; font-size: 12px; font-weight: 700; border-radius: 4px; font-family: 'Inter', sans-serif; background-color: #FEE2E2; color: #EF4444;">-30</span></td>
-                <td style="text-align: right; padding: 14px 18px; border-bottom: 1px solid #E9DDFE; font-weight: 700; color: #7C3AED;">120 units</td>
-              </tr>
-              <tr>
-                <td style="padding: 14px 18px; border-bottom: 1px solid #E9DDFE; color: #1E293B;">12 Apr 2025</td>
-                <td style="padding: 14px 18px; border-bottom: 1px solid #E9DDFE; color: #1E293B;">WH/Stock</td>
-                <td style="padding: 14px 18px; border-bottom: 1px solid #E9DDFE; color: #1E293B;">Customers</td>
-                <td style="text-align: center; padding: 14px 18px; border-bottom: 1px solid #E9DDFE; color: #64748B;">—</td>
-                <td style="text-align: center; padding: 14px 18px; border-bottom: 1px solid #E9DDFE;"><span class="pill-badge pill-out" style="display: inline-block; padding: 4px 10px; font-size: 12px; font-weight: 700; border-radius: 4px; font-family: 'Inter', sans-serif; background-color: #FEE2E2; color: #EF4444;">-80</span></td>
-                <td style="text-align: right; padding: 14px 18px; border-bottom: 1px solid #E9DDFE; font-weight: 700; color: #7C3AED;">40 units</td>
-              </tr>
-              <tr>
-                <td style="padding: 14px 18px; border-bottom: none; color: #1E293B;">28 Apr 2025</td>
-                <td style="padding: 14px 18px; border-bottom: none; color: #1E293B;">Suppliers</td>
-                <td style="padding: 14px 18px; border-bottom: none; color: #1E293B;">WH/Stock</td>
-                <td style="text-align: center; padding: 14px 18px; border-bottom: none;"><span class="pill-badge pill-in" style="display: inline-block; padding: 4px 10px; font-size: 12px; font-weight: 700; border-radius: 4px; font-family: 'Inter', sans-serif; background-color: #D1FAE5; color: #10B981;">+20</span></td>
-                <td style="text-align: center; padding: 14px 18px; border-bottom: none; color: #64748B;">—</td>
-                <td style="text-align: right; padding: 14px 18px; border-bottom: none; font-weight: 700; color: #7C3AED;">60 units</td>
-              </tr>
+                <tr style="border-bottom: 1px solid #E2E8F0;">
+                    <td style="padding: 10px 15px; font-weight: bold; color: #4A5568;">Technical Name</td>
+                    <td style="padding: 10px 15px; color: #2D3748; font-family: monospace; font-size: 13px;">daily_odoo_stock_ledger_report</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #E2E8F0;">
+                    <td style="padding: 10px 15px; font-weight: bold; color: #4A5568;">Odoo Version</td>
+                    <td style="padding: 10px 15px; color: #2D3748;">19.0 (Community &amp; Enterprise Editions)</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #E2E8F0;">
+                    <td style="padding: 10px 15px; font-weight: bold; color: #4A5568;">Dependencies</td>
+                    <td style="padding: 10px 15px; color: #2D3748;">
+                        <span style="background-color: #E2E8F0; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-family: monospace; margin-right: 5px;">stock</span>
+                        <span style="background-color: #E2E8F0; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-family: monospace;">mail</span>
+                    </td>
+                </tr>
+                <tr style="border-bottom: 1px solid #E2E8F0;">
+                    <td style="padding: 10px 15px; font-weight: bold; color: #4A5568;">License</td>
+                    <td style="padding: 10px 15px; color: #2D3748;">OPL-1</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #E2E8F0;">
+                    <td style="padding: 10px 15px; font-weight: bold; color: #4A5568;">Author</td>
+                    <td style="padding: 10px 15px; color: #2D3748;">Ahex Technologies</td>
+                </tr>
             </tbody>
-          </table>
-        </div>
+        </table>
+    </div>
+</section>
 
-        <div style="font-size: 14.5px; color: #64748B; text-align: center; max-width: 800px; margin: 20px auto 0 auto; line-height: 1.6;">
-          This format is familiar to anyone who has used a bank statement — and that familiarity is intentional. Stock reconciliation, audit preparation, and discrepancy investigation all become dramatically faster when data is presented this way.
-        </div>
-      </div>
-    </section>
-
-    <!-- SECTION 4: Balance Calculation Equation Card -->
-    <section style="padding: 60px 0; background-color: #F3E8FF; border-bottom: 1px solid #E9DDFE; text-align: center; display: block;">
-      <div class="container">
-        <h3 style="font-size: 22px; margin-bottom: 16px; font-weight: 700; color: #1E293B; font-family: 'Inter', sans-serif;">Balance Calculation — Transparent & Auditable</h3>
-        <div style="background-color: #FFFFFF; border: 1px solid #7C3AED; border-radius: 50px; padding: 12px 30px; display: inline-block; font-size: 18px; font-weight: 700; color: #7C3AED; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(124, 58, 237, 0.05); font-family: 'Inter', sans-serif;">
-          Balance = Opening Balance + Incoming - Outgoing
-        </div>
-        <div style="font-size: 14.5px; color: #64748B; max-width: 800px; margin: 0 auto; line-height: 1.6;">
-          The opening balance is calculated from all stock movements prior to the selected From date — going all the way back to the product's first receipt. Even if you run the report for a single day, the opening balance correctly reflects the entire stock history. Only Done state movements are included.
-        </div>
-      </div>
-    </section>
-
-    <!-- SECTION 5: Report Columns Explained -->
-    <section style="padding: 80px 0; background-color: #FFFFFF; border-bottom: 1px solid #E9DDFE; display: block;">
-      <div class="container">
-        <div style="text-align: center; max-width: 800px; margin: 0 auto 50px auto;">
-          <h2 style="font-size: 32px; margin-bottom: 16px; font-weight: 700; color: #1E293B; font-family: 'Inter', sans-serif; position: relative; display: inline-block;">
-            Report Columns Explained
-            <span style="content: ''; position: absolute; bottom: -6px; left: 0; width: 40px; height: 3px; background-color: #7C3AED; border-radius: 2px;"></span>
-          </h2>
-          <p style="color: #64748B; font-size: 16px; line-height: 1.6;">Each row represents one completed stock movement. The table gives you full context — not just quantities, but where, when, and in which direction.</p>
-        </div>
-
-        <div class="row g-4">
-          
-          <div class="col-md-6 col-lg-3">
-            <div class="card hover-card-effect" style="background-color: #FFFFFF; border: 1px solid #E9DDFE; border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(124, 58, 237, 0.05); border-top: 4px solid #7C3AED; height: 100%;">
-              <h4 style="font-size: 15px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; font-weight: 700; color: #1E293B; font-family: 'Inter', sans-serif;"><i class="fa fa-calendar" style="color: #7C3AED;"></i> Date</h4>
-              <p style="font-size: 13px; color: #64748B; margin-bottom: 0; line-height: 1.6;">Exact date and time of the stock movement as recorded in Odoo.</p>
-            </div>
-          </div>
-
-          <div class="col-md-6 col-lg-3">
-            <div class="card hover-card-effect" style="background-color: #FFFFFF; border: 1px solid #E9DDFE; border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(124, 58, 237, 0.05); border-top: 4px solid #7C3AED; height: 100%;">
-              <h4 style="font-size: 15px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; font-weight: 700; color: #1E293B; font-family: 'Inter', sans-serif;"><i class="fa fa-cube" style="color: #7C3AED;"></i> Product</h4>
-              <p style="font-size: 13px; color: #64748B; margin-bottom: 0; line-height: 1.6;">The product being reported on and audited.</p>
-            </div>
-          </div>
-
-          <div class="col-md-6 col-lg-3">
-            <div class="card hover-card-effect" style="background-color: #FFFFFF; border: 1px solid #E9DDFE; border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(124, 58, 237, 0.05); border-top: 4px solid #7C3AED; height: 100%;">
-              <h4 style="font-size: 15px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; font-weight: 700; color: #1E293B; font-family: 'Inter', sans-serif;"><i class="fa fa-sign-out" style="color: #7C3AED; transform: rotate(180deg);"></i> From</h4>
-              <p style="font-size: 13px; color: #64748B; margin-bottom: 0; line-height: 1.6;">Source location where the stock moved from.</p>
-            </div>
-          </div>
-
-          <div class="col-md-6 col-lg-3">
-            <div class="card hover-card-effect" style="background-color: #FFFFFF; border: 1px solid #E9DDFE; border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(124, 58, 237, 0.05); border-top: 4px solid #7C3AED; height: 100%;">
-              <h4 style="font-size: 15px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; font-weight: 700; color: #1E293B; font-family: 'Inter', sans-serif;"><i class="fa fa-sign-in" style="color: #7C3AED;"></i> To</h4>
-              <p style="font-size: 13px; color: #64748B; margin-bottom: 0; line-height: 1.6;">Destination location where the stock moved to.</p>
-            </div>
-          </div>
-
-          <div class="col-md-6 col-lg-3">
-            <div class="card hover-card-effect" style="background-color: #FFFFFF; border: 1px solid #E9DDFE; border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(124, 58, 237, 0.05); border-top: 4px solid #10B981; height: 100%;">
-              <h4 style="font-size: 15px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; font-weight: 700; color: #1E293B; font-family: 'Inter', sans-serif;"><i class="fa fa-plus-circle" style="color: #10B981;"></i> Incoming (IN)</h4>
-              <p style="font-size: 13px; color: #64748B; margin-bottom: 0; line-height: 1.6;">Quantity received into internal stock — highlighted in green.</p>
-            </div>
-          </div>
-
-          <div class="col-md-6 col-lg-3">
-            <div class="card hover-card-effect" style="background-color: #FFFFFF; border: 1px solid #E9DDFE; border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(124, 58, 237, 0.05); border-top: 4px solid #EF4444; height: 100%;">
-              <h4 style="font-size: 15px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; font-weight: 700; color: #1E293B; font-family: 'Inter', sans-serif;"><i class="fa fa-minus-circle" style="color: #EF4444;"></i> Outgoing (OUT)</h4>
-              <p style="font-size: 13px; color: #64748B; margin-bottom: 0; line-height: 1.6;">Quantity dispatched from internal stock — highlighted in red.</p>
-            </div>
-          </div>
-
-          <div class="col-md-6 col-lg-3">
-            <div class="card hover-card-effect" style="background-color: #FFFFFF; border: 1px solid #E9DDFE; border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(124, 58, 237, 0.05); border-top: 4px solid #7C3AED; height: 100%;">
-              <h4 style="font-size: 15px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; font-weight: 700; color: #1E293B; font-family: 'Inter', sans-serif;"><i class="fa fa-tag" style="color: #7C3AED;"></i> Type</h4>
-              <p style="font-size: 13px; color: #64748B; margin-bottom: 0; line-height: 1.6;">IN or OUT label — colour-coded for rapid scanning.</p>
-            </div>
-          </div>
-
-          <div class="col-md-6 col-lg-3">
-            <div class="card hover-card-effect" style="background-color: #FFFFFF; border: 1px solid #E9DDFE; border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(124, 58, 237, 0.05); border-top: 4px solid #7C3AED; height: 100%;">
-              <h4 style="font-size: 15px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; font-weight: 700; color: #1E293B; font-family: 'Inter', sans-serif;"><i class="fa fa-calculator" style="color: #7C3AED;"></i> Balance</h4>
-              <p style="font-size: 13px; color: #64748B; margin-bottom: 0; line-height: 1.6;">Running total of stock remaining after each movement completes.</p>
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </section>
-
-    <!-- SECTION 6: Step by Step Workflow Guide -->
-    <section class="bg-alternate" id="demo" style="padding: 80px 0; background-color: #F8F5FF; border-bottom: 1px solid #E9DDFE; display: block;">
-      <div class="container">
-        <div style="text-align: center; max-width: 800px; margin: 0 auto 50px auto;">
-          <h2 style="font-size: 32px; margin-bottom: 16px; font-weight: 700; color: #1E293B; font-family: 'Inter', sans-serif; position: relative; display: inline-block;">
-            How to Use It — Step by Step
-            <span style="content: ''; position: absolute; bottom: -6px; left: 0; width: 40px; height: 3px; background-color: #7C3AED; border-radius: 2px;"></span>
-          </h2>
-          <p style="color: #64748B; font-size: 16px; line-height: 1.6;">Simple and deeply integrated into standard Odoo workflows. Here is how you run a ledger.</p>
-        </div>
-
-        <div class="d-flex flex-column" style="gap: 40px;">
-
-          <!-- Step 1 -->
-          <div class="card hover-card-effect" style="background-color: #FFFFFF; border: 1px solid #E9DDFE; border-radius: 24px; padding: 32px; box-shadow: 0 4px 6px -1px rgba(124, 58, 237, 0.03); border-top: 4px solid #7C3AED;">
-            <div class="row align-items-center g-4">
-              <div class="col-lg-5">
-                <span class="step-num" style="font-size: 12px; font-weight: 700; color: #7C3AED; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; display: block; font-family: 'Inter', sans-serif;">Step 1</span>
-                <h3 style="font-size: 20px; margin-bottom: 12px; font-weight: 700; color: #1E293B; font-family: 'Inter', sans-serif;">Open Stock Ledger from Inventory Reporting</h3>
-                <p style="font-size: 14.5px; color: #64748B; margin-bottom: 0; line-height: 1.7;">Navigate directly to the new <strong>Stock Ledger</strong> reporting menu item inside the Inventory application.</p>
-              </div>
-              <div class="col-lg-7 text-center">
-                <div style="background-color: #FCE7F3; border: 1px solid #E9DDFE; border-radius: 16px; padding: 16px; display: inline-block; width: 100%; box-shadow: 0 4px 6px -1px rgba(124, 58, 237, 0.02);">
-                  <img src="img_5.png" alt="Inventory Report Menu Link" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); object-fit: contain; display: block; margin: 0 auto;">
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Step 2 -->
-          <div class="card hover-card-effect" style="background-color: #FFFFFF; border: 1px solid #E9DDFE; border-radius: 24px; padding: 32px; box-shadow: 0 4px 6px -1px rgba(124, 58, 237, 0.03); border-top: 4px solid #7C3AED;">
-            <div class="row align-items-center g-4">
-              <div class="col-lg-5">
-                <span class="step-num" style="font-size: 12px; font-weight: 700; color: #7C3AED; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; display: block; font-family: 'Inter', sans-serif;">Step 2</span>
-                <h3 style="font-size: 20px; margin-bottom: 12px; font-weight: 700; color: #1E293B; font-family: 'Inter', sans-serif;">Set Your Date Range</h3>
-                <p style="font-size: 14.5px; color: #64748B; margin-bottom: 0; line-height: 1.7;">A calendar wizard opens, pre-filled with the previous full calendar month. Adjust the From and To dates and click <strong>Generate</strong>.</p>
-              </div>
-              <div class="col-lg-7 text-center">
-                <div style="background-color: #FCE7F3; border: 1px solid #E9DDFE; border-radius: 16px; padding: 16px; display: inline-block; width: 100%; box-shadow: 0 4px 6px -1px rgba(124, 58, 237, 0.02);">
-                  <img src="img_1.png" alt="Date Filter Wizard" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); object-fit: contain; display: block; margin: 0 auto;">
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Step 3 -->
-          <div class="card hover-card-effect" style="background-color: #FFFFFF; border: 1px solid #E9DDFE; border-radius: 24px; padding: 32px; box-shadow: 0 4px 6px -1px rgba(124, 58, 237, 0.03); border-top: 4px solid #7C3AED;">
-            <div class="row align-items-center g-4">
-              <div class="col-lg-5">
-                <span class="step-num" style="font-size: 12px; font-weight: 700; color: #7C3AED; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; display: block; font-family: 'Inter', sans-serif;">Step 3</span>
-                <h3 style="font-size: 20px; margin-bottom: 12px; font-weight: 700; color: #1E293B; font-family: 'Inter', sans-serif;">Browse the Product List</h3>
-                <p style="font-size: 14.5px; color: #64748B; margin-bottom: 0; line-height: 1.7;">Browse or filter standard Odoo products. Your date range parameters are stored temporarily in the session context.</p>
-              </div>
-              <div class="col-lg-7 text-center">
-                <div style="background-color: #FCE7F3; border: 1px solid #E9DDFE; border-radius: 16px; padding: 16px; display: inline-block; width: 100%; box-shadow: 0 4px 6px -1px rgba(124, 58, 237, 0.02);">
-                  <img src="img_2.png" alt="Product Search List" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); object-fit: contain; display: block; margin: 0 auto;">
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Step 4 -->
-          <div class="card hover-card-effect" style="background-color: #FFFFFF; border: 1px solid #E9DDFE; border-radius: 24px; padding: 32px; box-shadow: 0 4px 6px -1px rgba(124, 58, 237, 0.03); border-top: 4px solid #7C3AED;">
-            <div class="row align-items-center g-4">
-              <div class="col-lg-5">
-                <span class="step-num" style="font-size: 12px; font-weight: 700; color: #7C3AED; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; display: block; font-family: 'Inter', sans-serif;">Step 4</span>
-                <h3 style="font-size: 20px; margin-bottom: 12px; font-weight: 700; color: #1E293B; font-family: 'Inter', sans-serif;">Click "View Ledger"</h3>
-                <p style="font-size: 14.5px; color: #64748B; margin-bottom: 0; line-height: 1.7;">Click the <strong>View Ledger</strong> action button on any product row. This triggers the ledger calculations.</p>
-              </div>
-              <div class="col-lg-7 text-center">
-                <div style="background-color: #FCE7F3; border: 1px solid #E9DDFE; border-radius: 16px; padding: 16px; display: inline-block; width: 100%; box-shadow: 0 4px 6px -1px rgba(124, 58, 237, 0.02);">
-                  <img src="img_3.png" alt="View Ledger Button Action" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); object-fit: contain; display: block; margin: 0 auto;">
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Step 5 -->
-          <div class="card hover-card-effect" style="background-color: #FFFFFF; border: 1px solid #E9DDFE; border-radius: 24px; padding: 32px; box-shadow: 0 4px 6px -1px rgba(124, 58, 237, 0.03); border-top: 4px solid #7C3AED;">
-            <div class="row align-items-center g-4">
-              <div class="col-lg-5">
-                <span class="step-num" style="font-size: 12px; font-weight: 700; color: #7C3AED; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; display: block; font-family: 'Inter', sans-serif;">Step 5</span>
-                <h3 style="font-size: 20px; margin-bottom: 12px; font-weight: 700; color: #1E293B; font-family: 'Inter', sans-serif;">Read and Export Your Full Ledger</h3>
-                <p style="font-size: 14.5px; color: #64748B; margin-bottom: 0; line-height: 1.7;">Analyze line-by-line movements with running balances. The ledger can be exported to Excel or printed via standard Odoo actions.</p>
-              </div>
-              <div class="col-lg-7 text-center">
-                <div style="background-color: #FCE7F3; border: 1px solid #E9DDFE; border-radius: 16px; padding: 16px; display: inline-block; width: 100%; box-shadow: 0 4px 6px -1px rgba(124, 58, 237, 0.02);">
-                  <img src="img_4.png" alt="Stock Ledger Report Output" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); object-fit: contain; display: block; margin: 0 auto;">
-                </div>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </section>
-
-    <!-- SECTION 7: Why Choose This Section -->
-    <section style="padding: 80px 0; background-color: #FFFFFF; border-bottom: 1px solid #E9DDFE; display: block;">
-      <div class="container">
-        <div style="max-width: 900px; margin: 0 auto;">
-          <h2 style="font-size: 24px; margin-bottom: 16px; position: relative; display: inline-block; font-weight: 700; color: #1E293B; font-family: 'Inter', sans-serif;">
-            Why Choose This Over a Custom Report?
-            <span style="content: ''; position: absolute; bottom: -4px; left: 0; width: 30px; height: 3px; background-color: #7C3AED; border-radius: 2px;"></span>
-          </h2>
-          <p style="font-size: 14.5px; color: #64748B; margin-bottom: 24px; line-height: 1.6;">Building a custom stock ledger report in Odoo from scratch requires understanding the stock.move model, handling the opening balance calculation (aggregating all historical moves), correctly excluding draft and cancelled states, and building a usable wizard interface.</p>
-          
-          <div class="card" style="border: 1px solid #7C3AED; border-radius: 16px; background-color: #F3E8FF; padding: 24px; position: relative; box-shadow: 0 1px 3px rgba(124, 58, 237, 0.05);">
-            <h4 style="font-size: 18px; color: #7C3AED; margin-bottom: 8px; font-weight: 700; font-family: 'Inter', sans-serif;">The ROI is immediate</h4>
-            <p style="font-size: 14px; color: #64748B; line-height: 1.7; margin-bottom: 16px;">This is typically 2–5 days of development work for an experienced Odoo developer. At $19.10 for a proven, tested module that installs in minutes — the return on investment is clear, even if you only use it once to resolve a single inventory discrepancy.</p>
-            <p style="font-size: 14px; color: #64748B; line-height: 1.7; margin-bottom: 0;">The module is maintained by Ahex Technologies, an Odoo Apps publisher with a track record of clean, lightweight modules. With just 201 lines of code it remains easy to audit and customise if your business ever needs extensions.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- SECTION 8: Ideal For Grid -->
-    <section style="padding: 80px 0; background-color: #F8F5FF; border-bottom: 1px solid #E9DDFE; display: block;">
-      <div class="container">
-        <div style="text-align: center; max-width: 800px; margin: 0 auto 50px auto;">
-          <h2 style="font-size: 32px; font-weight: 700; color: #1E293B; font-family: 'Inter', sans-serif; position: relative; display: inline-block;">
-            Ideal For
-            <span style="content: ''; position: absolute; bottom: -6px; left: 0; width: 40px; height: 3px; background-color: #7C3AED; border-radius: 2px;"></span>
-          </h2>
-          <p style="color: #64748B; font-size: 16px; line-height: 1.6;">Designed to support users across operations, finance, and implementation teams.</p>
-        </div>
-
-        <div class="row g-4 justify-content-center">
-          
-          <!-- Inventory Managers -->
-          <div class="col-lg-4 col-md-6">
-            <div class="card hover-card-effect" style="background-color: #FFFFFF; border: 1px solid #E9DDFE; border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(124, 58, 237, 0.05); height: 100%; display: flex; flex-direction: column; gap: 16px;">
-              <div style="background-color: #F3E8FF; color: #7C3AED; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0;"><i class="fa fa-user-circle"></i></div>
-              <div>
-                <h3 style="font-size: 18px; margin-bottom: 8px; font-weight: 700; color: #1E293B; font-family: 'Inter', sans-serif;">Inventory managers</h3>
-                <p style="font-size: 13.5px; color: #64748B; margin-bottom: 0; line-height: 1.6;">Inventory managers and warehouse controllers who need to explain stock figures to finance or management.</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Businesses -->
-          <div class="col-lg-4 col-md-6">
-            <div class="card hover-card-effect" style="background-color: #FFFFFF; border: 1px solid #E9DDFE; border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(124, 58, 237, 0.05); height: 100%; display: flex; flex-direction: column; gap: 16px;">
-              <div style="background-color: #F3E8FF; color: #7C3AED; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0;"><i class="fa fa-briefcase"></i></div>
-              <div>
-                <h3 style="font-size: 18px; margin-bottom: 8px; font-weight: 700; color: #1E293B; font-family: 'Inter', sans-serif;">Businesses</h3>
-                <p style="font-size: 13.5px; color: #64748B; margin-bottom: 0; line-height: 1.6;">Small to medium businesses wanting clean, auditable reports of stock movement without hiring dedicated IT support or SQL experts.</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Operations -->
-          <div class="col-lg-4 col-md-6">
-            <div class="card hover-card-effect" style="background-color: #FFFFFF; border: 1px solid #E9DDFE; border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(124, 58, 237, 0.05); height: 100%; display: flex; flex-direction: column; gap: 16px;">
-              <div style="background-color: #F3E8FF; color: #7C3AED; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0;"><i class="fa fa-cogs"></i></div>
-              <div>
-                <h3 style="font-size: 18px; margin-bottom: 8px; font-weight: 700; color: #1E293B; font-family: 'Inter', sans-serif;">Operations</h3>
-                <p style="font-size: 13.5px; color: #64748B; margin-bottom: 0; line-height: 1.6;">Logistics specialists and dispatch managers tracking stock changes, returns, adjustments, and receipts date-wise.</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Partners -->
-          <div class="col-lg-4 col-md-6">
-            <div class="card hover-card-effect" style="background-color: #FFFFFF; border: 1px solid #E9DDFE; border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(124, 58, 237, 0.05); height: 100%; display: flex; flex-direction: column; gap: 16px;">
-              <div style="background-color: #F3E8FF; color: #7C3AED; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0;"><i class="fa fa-handshake-o"></i></div>
-              <div>
-                <h3 style="font-size: 18px; margin-bottom: 8px; font-weight: 700; color: #1E293B; font-family: 'Inter', sans-serif;">Odoo implementation partners</h3>
-                <p style="font-size: 13.5px; color: #64748B; margin-bottom: 0; line-height: 1.6;">Odoo developers and consultants who need a ready-made, reliable module to satisfy their clients' financial ledger requirement.</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Companies running inventory -->
-          <div class="col-lg-4 col-md-6">
-            <div class="card hover-card-effect" style="background-color: #FFFFFF; border: 1px solid #E9DDFE; border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(124, 58, 237, 0.05); height: 100%; display: flex; flex-direction: column; gap: 16px;">
-              <div style="background-color: #F3E8FF; color: #7C3AED; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0;"><i class="fa fa-building-o"></i></div>
-              <div>
-                <h3 style="font-size: 18px; margin-bottom: 8px; font-weight: 700; color: #1E293B; font-family: 'Inter', sans-serif;">Companies running Odoo Inventory</h3>
-                <p style="font-size: 14.5px; color: #64748B; margin-bottom: 0; line-height: 1.6;">Enterprise teams requiring strict date-wise inventory audit trail support, stock reconciliations, and closing valuations.</p>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </section>
-
-    <!-- SECTION 9: Quick Setup Checklist -->
-    <section style="padding: 80px 0; background-color: #FFFFFF; border-bottom: 1px solid #E9DDFE; display: block;">
-      <div class="container">
-        <div style="text-align: center; max-width: 800px; margin: 0 auto 50px auto;">
-          <h2 style="font-size: 32px; font-weight: 700; color: #1E293B; font-family: 'Inter', sans-serif; position: relative; display: inline-block;">
-            Quick Setup Guide
-            <span style="content: ''; position: absolute; bottom: -6px; left: 0; width: 40px; height: 3px; background-color: #7C3AED; border-radius: 2px;"></span>
-          </h2>
-        </div>
-
-        <div class="row g-4">
-          
-          <div class="col-md-6">
-            <div class="card hover-card-effect" style="background-color: #FFFFFF; border: 1px solid #E9DDFE; border-radius: 16px; padding: 30px; box-shadow: 0 1px 3px rgba(124, 58, 237, 0.05); height: 100%;">
-              <h3 style="font-size: 18px; color: #7C3AED; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #E9DDFE; padding-bottom: 12px; font-weight: 700; font-family: 'Inter', sans-serif;">Step 1 — Install the Module</h3>
-              <ul style="list-style: none; padding-left: 0; margin-bottom: 0;">
-                <li style="margin-bottom: 16px; display: flex; align-items: start; font-size: 14px; color: #64748B;"><i class="fa fa-check-circle" style="color: #7C3AED; margin-right: 10px; margin-top: 4px;"></i> <div>Copy module folder to your custom addons directory</div></li>
-                <li style="margin-bottom: 16px; display: flex; align-items: start; font-size: 14px; color: #64748B;"><i class="fa fa-check-circle" style="color: #7C3AED; margin-right: 10px; margin-top: 4px;"></i> <div>Go to Settings &rarr; activate Developer Mode</div></li>
-                <li style="margin-bottom: 16px; display: flex; align-items: start; font-size: 14px; color: #64748B;"><i class="fa fa-check-circle" style="color: #7C3AED; margin-right: 10px; margin-top: 4px;"></i> <div>Go to Apps &rarr; Update Apps List</div></li>
-                <li style="margin-bottom: 0; display: flex; align-items: start; font-size: 14px; color: #64748B;"><i class="fa fa-check-circle" style="color: #7C3AED; margin-right: 10px; margin-top: 4px;"></i> <div>Search "Stock Ledger Report" &rarr; click Install</div></li>
-              </ul>
-            </div>
-          </div>
-
-          <div class="col-md-6">
-            <div class="card hover-card-effect" style="background-color: #FFFFFF; border: 1px solid #E9DDFE; border-radius: 16px; padding: 30px; box-shadow: 0 1px 3px rgba(124, 58, 237, 0.05); height: 100%;">
-              <h3 style="font-size: 18px; color: #7C3AED; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #E9DDFE; padding-bottom: 12px; font-weight: 700; font-family: 'Inter', sans-serif;">Step 2 — Start Using Immediately</h3>
-              <ul style="list-style: none; padding-left: 0; margin-bottom: 0;">
-                <li style="margin-bottom: 16px; display: flex; align-items: start; font-size: 14px; color: #64748B;"><i class="fa fa-check-circle" style="color: #7C3AED; margin-right: 10px; margin-top: 4px;"></i> <div>No additional configuration required</div></li>
-                <li style="margin-bottom: 16px; display: flex; align-items: start; font-size: 14px; color: #64748B;"><i class="fa fa-check-circle" style="color: #7C3AED; margin-right: 10px; margin-top: 4px;"></i> <div>Navigate to Inventory &rarr; Reporting &rarr; Stock Ledger</div></li>
-                <li style="margin-bottom: 0; display: flex; align-items: start; font-size: 14px; color: #64748B;"><i class="fa fa-check-circle" style="color: #7C3AED; margin-right: 10px; margin-top: 4px;"></i> <div>Set your date range and generate your first ledger</div></li>
-              </ul>
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </section>
-
-    <!-- SECTION 10: Technical Specifications -->
-    <section class="bg-alternate" style="padding: 80px 0; background-color: #F8F5FF; border-bottom: 1px solid #E9DDFE; display: block;">
-      <div class="container">
-        <div style="text-align: center; max-width: 800px; margin: 0 auto 50px auto;">
-          <h2 style="font-size: 32px; font-weight: 700; color: #1E293B; font-family: 'Inter', sans-serif; position: relative; display: inline-block;">
-            Technical Specifications
-            <span style="content: ''; position: absolute; bottom: -6px; left: 0; width: 40px; height: 3px; background-color: #7C3AED; border-radius: 2px;"></span>
-          </h2>
-        </div>
-
-        <!-- Specs 3x2 Grid -->
-        <div class="row g-3 mb-4">
-          <div class="col-6 col-md-4">
-            <div class="card" style="background-color: #F8F5FF; border: 1px solid #E9DDFE; border-radius: 16px; padding: 20px; text-align: center; height: 100%; box-shadow: none; transition: none;">
-              <div style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; font-family: 'Inter', sans-serif;">Odoo Version</div>
-              <div style="font-size: 15px; font-weight: 700; color: #1E293B; font-family: 'Inter', sans-serif;">19.0</div>
-            </div>
-          </div>
-          <div class="col-6 col-md-4">
-            <div class="card" style="background-color: #F8F5FF; border: 1px solid #E9DDFE; border-radius: 16px; padding: 20px; text-align: center; height: 100%; box-shadow: none; transition: none;">
-              <div style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; font-family: 'Inter', sans-serif;">Edition</div>
-              <div style="font-size: 15px; font-weight: 700; color: #1E293B; font-family: 'Inter', sans-serif;">Community & Enterprise</div>
-            </div>
-          </div>
-          <div class="col-6 col-md-4">
-            <div class="card" style="background-color: #F8F5FF; border: 1px solid #E9DDFE; border-radius: 16px; padding: 20px; text-align: center; height: 100%; box-shadow: none; transition: none;">
-              <div style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; font-family: 'Inter', sans-serif;">Lines of Code</div>
-              <div style="font-size: 15px; font-weight: 700; color: #1E293B; font-family: 'Inter', sans-serif;">201</div>
-            </div>
-          </div>
-          <div class="col-6 col-md-4">
-            <div class="card" style="background-color: #F8F5FF; border: 1px solid #E9DDFE; border-radius: 16px; padding: 20px; text-align: center; height: 100%; box-shadow: none; transition: none;">
-              <div style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; font-family: 'Inter', sans-serif;">Technical Name</div>
-              <div style="font-size: 15px; font-weight: 700; color: #1E293B; font-family: 'Inter', sans-serif; word-break: break-all;">daily_odoo_stock_ledger_report</div>
-            </div>
-          </div>
-          <div class="col-6 col-md-4">
-            <div class="card" style="background-color: #F8F5FF; border: 1px solid #E9DDFE; border-radius: 16px; padding: 20px; text-align: center; height: 100%; box-shadow: none; transition: none;">
-              <div style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; font-family: 'Inter', sans-serif;">License</div>
-              <div style="font-size: 15px; font-weight: 700; color: #1E293B; font-family: 'Inter', sans-serif;">OPL-1</div>
-            </div>
-          </div>
-          <div class="col-6 col-md-4">
-            <div class="card" style="background-color: #F8F5FF; border: 1px solid #E9DDFE; border-radius: 16px; padding: 20px; text-align: center; height: 100%; box-shadow: none; transition: none;">
-              <div style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; font-family: 'Inter', sans-serif;">External Dependencies</div>
-              <div style="font-size: 15px; font-weight: 700; color: #1E293B; font-family: 'Inter', sans-serif;">None</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Spec checkmark badges -->
-        <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-bottom: 24px;">
-          <span style="font-size: 12.5px; background-color: #ECFDF5; color: #065F46; border: 1px solid #A7F3D0; padding: 6px 14px; border-radius: 50px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;"><i class="fa fa-check"></i> Odoo Online</span>
-          <span style="font-size: 12.5px; background-color: #ECFDF5; color: #065F46; border: 1px solid #A7F3D0; padding: 6px 14px; border-radius: 50px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;"><i class="fa fa-check"></i> Odoo.sh</span>
-          <span style="font-size: 12.5px; background-color: #ECFDF5; color: #065F46; border: 1px solid #A7F3D0; padding: 6px 14px; border-radius: 50px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;"><i class="fa fa-check"></i> On-Premise</span>
-          <span style="font-size: 12.5px; background-color: #ECFDF5; color: #065F46; border: 1px solid #A7F3D0; padding: 6px 14px; border-radius: 50px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;"><i class="fa fa-check"></i> Community Edition</span>
-          <span style="font-size: 12.5px; background-color: #ECFDF5; color: #065F46; border: 1px solid #A7F3D0; padding: 6px 14px; border-radius: 50px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;"><i class="fa fa-check"></i> Enterprise Edition</span>
-        </div>
-
-        <!-- Double specification rows -->
-        <div class="row g-3">
-          <div class="col-md-6">
-            <div class="card" style="border: 1px solid #E9DDFE; border-radius: 16px; padding: 20px; background-color: #FFFFFF; height: 100%; box-shadow: 0 1px 3px rgba(124, 58, 237, 0.05);">
-              <h4 style="font-size: 14px; color: #64748B; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.02em; font-weight: 700; font-family: 'Inter', sans-serif;">Module Dependencies</h4>
-              <div style="font-size: 13.5px; display: flex; flex-wrap: wrap; gap: 6px;">
-                <span style="font-size: 11.5px; background-color: #E0F2FE; border: 1px solid #BAE6FD; padding: 4px 10px; border-radius: 50px; color: #0369A1; font-weight: 500;">• inventory (stock)</span>
-                <span style="font-size: 11.5px; background-color: #E0F2FE; border: 1px solid #BAE6FD; padding: 4px 10px; border-radius: 50px; color: #0369A1; font-weight: 500;">• discuss (mail)</span>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-6">
-            <div class="card" style="border: 1px solid #E9DDFE; border-radius: 16px; padding: 20px; background-color: #FFFFFF; height: 100%; box-shadow: 0 1px 3px rgba(124, 58, 237, 0.05);">
-              <h4 style="font-size: 14px; color: #64748B; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.02em; font-weight: 700; font-family: 'Inter', sans-serif;">Availability</h4>
-              <div style="font-size: 13.5px; color: #64748B; font-weight: 500;">
-                Odoo Online • Odoo.sh • On Premise
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- SECTION 11: SEO Search tags cloud -->
-    <section style="padding: 60px 0; background-color: #F8F5FF; border-bottom: 1px solid #E9DDFE; text-align: center; display: block;">
-      <div class="container">
-        <h3 style="font-size: 14px; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 20px; font-weight: 700; font-family: 'Inter', sans-serif;">What Users Search For — This Module Covers It All</h3>
-        <p style="font-size: 13.5px; color: #64748B; margin-bottom: 24px; max-width: 800px; margin-left: auto; margin-right: auto; line-height: 1.6;">
-          Users searching for this kind of inventory reporting tool use a wide range of terms. This module satisfies all of them:
-        </p>
-        <div style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; max-width: 1000px; margin: 0 auto;">
-          <span style="font-size: 11px; color: #64748B; background-color: #FFFFFF; border: 1px solid #E9DDFE; padding: 4px 10px; border-radius: 4px;">stock ledger report Odoo</span>
-          <span style="font-size: 11px; color: #64748B; background-color: #FFFFFF; border: 1px solid #E9DDFE; padding: 4px 10px; border-radius: 4px;">inventory movement history Odoo</span>
-          <span style="font-size: 11px; color: #64748B; background-color: #FFFFFF; border: 1px solid #E9DDFE; padding: 4px 10px; border-radius: 4px;">Odoo running stock balance</span>
-          <span style="font-size: 11px; color: #64748B; background-color: #FFFFFF; border: 1px solid #E9DDFE; padding: 4px 10px; border-radius: 4px;">Odoo stock movement report</span>
-          <span style="font-size: 11px; color: #64748B; background-color: #FFFFFF; border: 1px solid #E9DDFE; padding: 4px 10px; border-radius: 4px;">Odoo warehouse reporting</span>
-          <span style="font-size: 11px; color: #64748B; background-color: #FFFFFF; border: 1px solid #E9DDFE; padding: 4px 10px; border-radius: 4px;">stock in out report Odoo</span>
-          <span style="font-size: 11px; color: #64748B; background-color: #FFFFFF; border: 1px solid #E9DDFE; padding: 4px 10px; border-radius: 4px;">daily stock ledger Odoo</span>
-          <span style="font-size: 11px; color: #64748B; background-color: #FFFFFF; border: 1px solid #E9DDFE; padding: 4px 10px; border-radius: 4px;">Odoo inventory audit report</span>
-          <span style="font-size: 11px; color: #64748B; background-color: #FFFFFF; border: 1px solid #E9DDFE; padding: 4px 10px; border-radius: 4px;">Odoo stock reconciliation</span>
-          <span style="font-size: 11px; color: #64748B; background-color: #FFFFFF; border: 1px solid #E9DDFE; padding: 4px 10px; border-radius: 4px;">product stock history Odoo</span>
-          <span style="font-size: 11px; color: #64748B; background-color: #FFFFFF; border: 1px solid #E9DDFE; padding: 4px 10px; border-radius: 4px;">Odoo opening stock balance</span>
-          <span style="font-size: 11px; color: #64748B; background-color: #FFFFFF; border: 1px solid #E9DDFE; padding: 4px 10px; border-radius: 4px;">Odoo inventory traceability</span>
-          <span style="font-size: 11px; color: #64748B; background-color: #FFFFFF; border: 1px solid #E9DDFE; padding: 4px 10px; border-radius: 4px;">Odoo date-wise stock report</span>
-          <span style="font-size: 11px; color: #64748B; background-color: #FFFFFF; border: 1px solid #E9DDFE; padding: 4px 10px; border-radius: 4px;">cumulative stock balance Odoo</span>
-          <span style="font-size: 11px; color: #64748B; background-color: #FFFFFF; border: 1px solid #E9DDFE; padding: 4px 10px; border-radius: 4px;">Odoo goods received report</span>
-          <span style="font-size: 11px; color: #64748B; background-color: #FFFFFF; border: 1px solid #E9DDFE; padding: 4px 10px; border-radius: 4px;">Odoo inventory reporting</span>
-          <span style="font-size: 11px; color: #64748B; background-color: #FFFFFF; border: 1px solid #E9DDFE; padding: 4px 10px; border-radius: 4px;">warehouse stock ledger Odoo module</span>
-          <span style="font-size: 11px; color: #64748B; background-color: #FFFFFF; border: 1px solid #E9DDFE; padding: 4px 10px; border-radius: 4px;">bank statement for warehouse</span>
-          <span style="font-size: 11px; color: #64748B; background-color: #FFFFFF; border: 1px solid #E9DDFE; padding: 4px 10px; border-radius: 4px;">Odoo inventory ERP reporting</span>
-          <span style="font-size: 11px; color: #64748B; background-color: #FFFFFF; border: 1px solid #E9DDFE; padding: 4px 10px; border-radius: 4px;">Odoo inventory transaction history</span>
-        </div>
-      </div>
-    </section>
-
-    <!-- SECTION 12: Support & Documentation grid -->
-    <section style="padding: 80px 0; background-color: #FFFFFF; border-bottom: 1px solid #E9DDFE; display: block;">
-      <div class="container">
-        <div style="text-align: center; max-width: 800px; margin: 0 auto 50px auto;">
-          <h2 style="font-size: 32px; font-weight: 700; color: #1E293B; font-family: 'Inter', sans-serif; position: relative; display: inline-block;">
-            Support & Documentation
-            <span style="content: ''; position: absolute; bottom: -6px; left: 0; width: 40px; height: 3px; background-color: #7C3AED; border-radius: 2px;"></span>
-          </h2>
-          <p style="color: #64748B; font-size: 16px; line-height: 1.6;">Committed to ensuring you get the most out of the Stock Ledger Report. For purchase support, installation assistance, or customisation enquiries, contact us through the channel where you purchased this module.</p>
-        </div>
-
-        <div class="row g-4">
-          
-          <div class="col-md-4">
-            <div class="card hover-card-effect" style="background-color: #FFFFFF; border: 1px solid #E9DDFE; border-radius: 16px; padding: 30px 24px; text-align: center; display: flex; flex-direction: column; justify-content: space-between; height: 100%; box-shadow: 0 1px 3px rgba(124, 58, 237, 0.05);">
-              <div style="margin-bottom: 16px;"><i class="fa fa-credit-card" style="font-size: 32px; color: #7C3AED;"></i></div>
-              <h3 style="font-size: 16px; margin-bottom: 10px; font-weight: 700; color: #1E293B; font-family: 'Inter', sans-serif;">Purchase Support</h3>
-              <p style="font-size: 13.5px; color: #64748B; margin-bottom: 20px; line-height: 1.6; flex-grow: 1;">90 days of support included from purchase date via Odoo Apps</p>
-              <a href="mailto:support@ahex.co" style="font-size: 13.5px; font-weight: 600; color: #7C3AED; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; justify-content: center;">Open Support Ticket <i class="fa fa-long-arrow-right"></i></a>
-            </div>
-          </div>
-
-          <div class="col-md-4">
-            <div class="card hover-card-effect" style="background-color: #FFFFFF; border: 1px solid #E9DDFE; border-radius: 16px; padding: 30px 24px; text-align: center; display: flex; flex-direction: column; justify-content: space-between; height: 100%; box-shadow: 0 1px 3px rgba(124, 58, 237, 0.05);">
-              <div style="margin-bottom: 16px;"><i class="fa fa-phone" style="font-size: 32px; color: #7C3AED;"></i></div>
-              <h3 style="font-size: 16px; margin-bottom: 10px; font-weight: 700; color: #1E293B; font-family: 'Inter', sans-serif;">Contact Ahex</h3>
-              <p style="font-size: 13.5px; color: #64748B; margin-bottom: 20px; line-height: 1.6; flex-grow: 1;">Reach out directly for installation or customisation enquiries</p>
-              <a href="mailto:contact@ahex.co" style="font-size: 13.5px; font-weight: 600; color: #7C3AED; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; justify-content: center;">ahex.co/contact <i class="fa fa-long-arrow-right"></i></a>
-            </div>
-          </div>
-
-          <div class="col-md-4">
-            <div class="card hover-card-effect" style="background-color: #FFFFFF; border: 1px solid #E9DDFE; border-radius: 16px; padding: 30px 24px; text-align: center; display: flex; flex-direction: column; justify-content: space-between; height: 100%; box-shadow: 0 1px 3px rgba(124, 58, 237, 0.05);">
-              <div style="margin-bottom: 16px;"><i class="fa fa-book" style="font-size: 32px; color: #7C3AED;"></i></div>
-              <h3 style="font-size: 16px; margin-bottom: 10px; font-weight: 700; color: #1E293B; font-family: 'Inter', sans-serif;">Full Website Guide</h3>
-              <p style="font-size: 13.5px; color: #64748B; margin-bottom: 20px; line-height: 1.6; flex-grow: 1;">Deep-dive article - balance formulas, use cases, FAQs</p>
-              <a href="https://ahex.co" target="_blank" style="font-size: 13.5px; font-weight: 600; color: #7C3AED; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; justify-content: center;">Read Full Guide <i class="fa fa-long-arrow-right"></i></a>
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </section>
-
-    <!-- SECTION 13: Frequently Asked Questions -->
-    <section class="bg-alternate" id="faq" style="padding: 80px 0; background-color: #F8F5FF; border-bottom: 1px solid #E9DDFE; display: block;">
-      <div class="container">
-        <div style="text-align: center; max-width: 800px; margin: 0 auto 50px auto;">
-          <h2 style="font-size: 32px; font-weight: 700; color: #1E293B; font-family: 'Inter', sans-serif; position: relative; display: inline-block;">
-            Frequently Asked Questions
-            <span style="content: ''; position: absolute; bottom: -6px; left: 0; width: 40px; height: 3px; background-color: #7C3AED; border-radius: 2px;"></span>
-          </h2>
-          <p style="color: #64748B; font-size: 16px; line-height: 1.6;">Find quick answers to common questions about the Stock Ledger Report module.</p>
-        </div>
-
-        <div class="row g-4">
-          
-          <!-- Left side graphic illustration -->
-          <div class="col-lg-5">
-            <div style="border-radius: 24px; overflow: hidden; border: 1px solid #E9DDFE; box-shadow: 0 4px 6px -1px rgba(124, 58, 237, 0.05); aspect-ratio: 520/527; display: flex; height: 100%;">
-              <img src="faq_warehouse.png" alt="Warehouse manager using tablet" class="img-fluid" style="width: 100%; height: 100%; object-fit: cover;">
-            </div>
-          </div>
-
-          <!-- Right side details/summary FAQ list -->
-          <div class="col-lg-7 d-flex flex-column" style="gap: 12px;">
-            
-            <details class="faq-accordion" style="background-color: #FFFFFF; border: 1px solid #E9DDFE; border-radius: 16px; padding: 16px 20px; transition: all 0.2s ease; display: block;">
-              <summary style="font-family: 'Inter', sans-serif; font-size: 14.5px; font-weight: 600; color: #1E293B; cursor: pointer; display: flex; justify-content: space-between; align-items: center; outline: none; list-style: none;">Is this compatible with both Odoo Community and Enterprise?</summary>
-              <p style="font-size: 13.5px; color: #64748B; margin-top: 12px; padding-top: 12px; border-top: 1px solid #E9DDFE; line-height: 1.6;">Yes, the module is fully compatible with both Odoo Community and Odoo Enterprise versions. It is developed using Odoo standard ORM API rules.</p>
-            </details>
-
-            <details class="faq-accordion" style="background-color: #FFFFFF; border: 1px solid #E9DDFE; border-radius: 16px; padding: 16px 20px; transition: all 0.2s ease; display: block;">
-              <summary style="font-family: 'Inter', sans-serif; font-size: 14.5px; font-weight: 600; color: #1E293B; cursor: pointer; display: flex; justify-content: space-between; align-items: center; outline: none; list-style: none;">Can I filter by warehouse or specific location?</summary>
-              <p style="font-size: 13.5px; color: #64748B; margin-top: 12px; padding-top: 12px; border-top: 1px solid #E9DDFE; line-height: 1.6;">The current version calculates ledger movements for the selected product date-wise across all warehouse locations, showing source and destination fields for each movement. If you need dedicated filtering by specific location, feel free to contact Ahex Technologies for a customization inquiry.</p>
-            </details>
-
-            <details class="faq-accordion" style="background-color: #FFFFFF; border: 1px solid #E9DDFE; border-radius: 16px; padding: 16px 20px; transition: all 0.2s ease; display: block;">
-              <summary style="font-family: 'Inter', sans-serif; font-size: 14.5px; font-weight: 600; color: #1E293B; cursor: pointer; display: flex; justify-content: space-between; align-items: center; outline: none; list-style: none;">How is the opening balance calculated?</summary>
-              <p style="font-size: 13.5px; color: #64748B; margin-top: 12px; padding-top: 12px; border-top: 1px solid #E9DDFE; line-height: 1.6;">The opening balance is calculated by summing all completed (Done state) stock movements for the product from the beginning of your Odoo history up to the selected From date. Incoming quantities add to the balance, while outgoing quantities subtract from it.</p>
-            </details>
-
-            <details class="faq-accordion" style="background-color: #FFFFFF; border: 1px solid #E9DDFE; border-radius: 16px; padding: 16px 20px; transition: all 0.2s ease; display: block;">
-              <summary style="font-family: 'Inter', sans-serif; font-size: 14.5px; font-weight: 600; color: #1E293B; cursor: pointer; display: flex; justify-content: space-between; align-items: center; outline: none; list-style: none;">What is the difference between this and Odoo's standard inventory report?</summary>
-              <p style="font-size: 13.5px; color: #64748B; margin-top: 12px; padding-top: 12px; border-top: 1px solid #E9DDFE; line-height: 1.6;">Odoo's standard reporting shows current stock valuations or stock moves lists, but lacks a running chronological ledger. Our module orders movements by date, shows exact from/to locations, color-codes IN/OUT movements, and calculates a running balance after each transaction—just like a bank statement.</p>
-            </details>
-
-            <details class="faq-accordion" style="background-color: #FFFFFF; border: 1px solid #E9DDFE; border-radius: 16px; padding: 16px 20px; transition: all 0.2s ease; display: block;">
-              <summary style="font-family: 'Inter', sans-serif; font-size: 14.5px; font-weight: 600; color: #1E293B; cursor: pointer; display: flex; justify-content: space-between; align-items: center; outline: none; list-style: none;">Are there any external dependencies or API calls?</summary>
-              <p style="font-size: 13.5px; color: #64748B; margin-top: 12px; padding-top: 12px; border-top: 1px solid #E9DDFE; line-height: 1.6;">No. The module is 100% self-contained and runs entirely on your local Odoo server database. There are no external dependencies, API scripts, or trackers.</p>
-            </details>
-
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- SECTION 14: Maintainer/Brand Card -->
-    <section style="padding: 80px 0; background-color: #FFFFFF; border-bottom: 1px solid #E9DDFE; display: block;">
-      <div class="container">
-        <div class="card hover-card-effect" style="background-color: #F8FAFC; border: 1px solid #E9DDFE; border-radius: 24px; padding: 30px; display: flex; flex-direction: row; flex-wrap: wrap; gap: 24px; align-items: center; box-shadow: 0 1px 3px rgba(124, 58, 237, 0.05);">
-          
-          <div style="width: 100px; height: 80px; background-color: #FFFFFF; border: 1px solid #E9DDFE; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 800; color: #7C3AED; font-family: 'Inter', sans-serif; box-shadow: 0 1px 3px rgba(124, 58, 237, 0.05); flex-shrink: 0;">AHEX</div>
-          
-          <div style="flex: 1; min-width: 280px;">
-            <h3 style="font-size: 20px; margin-bottom: 6px; font-weight: 700; color: #1E293B; font-family: 'Inter', sans-serif;">Ahex Technologies</h3>
-            <p style="font-size: 14px; color: #64748B; margin-bottom: 16px; line-height: 1.6;">Odoo module development experts building clean, purpose-built solutions for inventory, reporting, and ERP workflows. Lightweight code, zero unnecessary dependencies — modules your team can trust and auditors can read.</p>
-            <div style="display: flex; flex-wrap: wrap; gap: 16px;">
-              <a href="https://ahex.co" target="_blank" style="font-size: 13px; font-weight: 600; color: #7C3AED; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;"><i class="fa fa-globe"></i> ahex.co</a>
-              <a href="mailto:contact@ahex.co" style="font-size: 13px; font-weight: 600; color: #7C3AED; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;"><i class="fa fa-envelope"></i> Contact Us</a>
-              <a href="https://ahex.co" target="_blank" style="font-size: 13px; font-weight: 600; color: #7C3AED; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;"><i class="fa fa-book"></i> Full Technical Guide</a>
-              <a href="https://apps.odoo.com" target="_blank" style="font-size: 13px; font-weight: 600; color: #7C3AED; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;"><i class="fa fa-th-large"></i> All Odoo Modules</a>
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </section>
-
-    <!-- SECTION 15: Footer CTA & Other Apps -->
-    <footer style="padding: 60px 0; background-color: #FFFFFF; display: block;">
-      <div class="container">
+<!-- SECTION 9: FAQ -->
+<section class="oe_container" style="margin-bottom: 40px;">
+    <div class="oe_row oe_spaced" style="max-width: 900px; margin: 0 auto;">
+        <h2 class="oe_slogan" style="color: #71639E; font-weight: 700; font-size: 24px; margin-bottom: 25px; text-align: left;">Frequently Asked Questions</h2>
         
-        <!-- CTA Bottom Banner -->
-        <div style="background-color: #7C3AED; background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%); color: #FFFFFF; border-radius: 24px; padding: 48px; text-align: center; box-shadow: 0 10px 15px -3px rgba(124, 58, 237, 0.1); position: relative; overflow: hidden;">
-          <span style="display: inline-block; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; color: rgba(255, 255, 255, 0.8);">Our Website Has More</span>
-          <h2 style="color: #FFFFFF; font-size: 32px; margin-bottom: 12px; font-weight: 700; font-family: 'Inter', sans-serif;">Want to Dig Deeper Before Buying?</h2>
-          <p style="color: rgba(255, 255, 255, 0.9); font-size: 15px; max-width: 650px; margin: 0 auto 30px auto; line-height: 1.6;">Our complete guide on the Ahex Technologies website covers the balance calculation formula, 2 industry use cases, all FAQs answered in detail, and a full technical breakdown. Same product - deeper story.</p>
-          <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 16px;">
-            <a href="https://ahex.co" target="_blank" class="btn" style="display: inline-flex; align-items: center; justify-content: center; padding: 12px 24px; font-size: 14px; font-weight: 600; border-radius: 12px; text-decoration: none; cursor: pointer; font-family: 'Inter', sans-serif; background-color: #FFFFFF; color: #7C3AED; border: 1px solid #FFFFFF;">Read the Full Guide on Our Website</a>
-            <a href="https://apps.odoo.com" target="_blank" class="btn" style="display: inline-flex; align-items: center; justify-content: center; padding: 12px 24px; font-size: 14px; font-weight: 600; border-radius: 12px; text-decoration: none; cursor: pointer; font-family: 'Inter', sans-serif; background-color: rgba(255, 255, 255, 0.15); color: #FFFFFF; border: 1px solid rgba(255, 255, 255, 0.3);">Add to Cart - $19.10</a>
-          </div>
+        <div style="border-bottom: 1px solid #E2E8F0; padding: 15px 0;">
+            <h4 style="font-weight: 700; font-size: 15px; margin: 0 0 6px; color: #2D3748;">Is this compatible with both Odoo Community and Enterprise?</h4>
+            <p style="font-size: 13.5px; color: #718096; margin: 0; line-height: 1.5;">Yes, the module is fully compatible with both Odoo Community and Odoo Enterprise versions. It is developed using Odoo standard ORM API rules.</p>
         </div>
 
-        <!-- Explore Other Apps -->
-        <div style="margin-top: 60px;">
-          <h3 style="font-size: 24px; text-align: center; margin-bottom: 8px; font-weight: 700; color: #1E293B; font-family: 'Inter', sans-serif;">Explore our other applications</h3>
-          <p style="font-size: 14px; color: #64748B; text-align: center; margin-bottom: 30px; line-height: 1.6;">Discover other tools developed by Ahex Technologies to streamline your Odoo workspace.</p>
-          
-          <div class="row g-4">
-            
-            <!-- Card 1 -->
-            <div class="col-md-4">
-              <div class="card hover-card-effect" style="background-color: #FFFFFF; border: 1px solid #E9DDFE; border-radius: 16px; overflow: hidden; box-shadow: 0 1px 3px rgba(124, 58, 237, 0.05); display: flex; flex-direction: column; height: 100%; padding: 0;">
-                <div style="background-color: #F8F5FF; height: 140px; display: flex; align-items: center; justify-content: center; font-size: 40px; color: #7C3AED; border-bottom: 1px solid #E9DDFE;"><i class="fa fa-envelope-o"></i></div>
-                <div style="padding: 20px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between;">
-                  <div>
-                    <h4 style="font-size: 15px; margin-bottom: 6px; font-weight: 700; color: #1E293B; font-family: 'Inter', sans-serif;">AI Email Lead Parser for CRM</h4>
-                    <p style="font-size: 12.5px; color: #64748B; margin-bottom: 12px; line-height: 1.5;">Convert incoming customer support and sales emails into clean CRM pipeline leads automatically.</p>
-                  </div>
-                  <div style="display: flex; gap: 6px;">
-                    <span style="font-size: 10px; background-color: #F3E8FF; color: #7C3AED; padding: 2px 6px; border-radius: 4px; font-weight: 700; text-transform: uppercase;">CRM</span>
-                    <span style="font-size: 10px; background-color: #F3E8FF; color: #7C3AED; padding: 2px 6px; border-radius: 4px; font-weight: 700; text-transform: uppercase;">AI</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Card 2 -->
-            <div class="col-md-4">
-              <div class="card hover-card-effect" style="background-color: #FFFFFF; border: 1px solid #E9DDFE; border-radius: 16px; overflow: hidden; box-shadow: 0 1px 3px rgba(124, 58, 237, 0.05); display: flex; flex-direction: column; height: 100%; padding: 0;">
-                <div style="background-color: #F8F5FF; height: 140px; display: flex; align-items: center; justify-content: center; font-size: 40px; color: #7C3AED; border-bottom: 1px solid #E9DDFE;"><i class="fa fa-file-pdf-o"></i></div>
-                <div style="padding: 20px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between;">
-                  <div>
-                    <h4 style="font-size: 15px; margin-bottom: 6px; font-weight: 700; color: #1E293B; font-family: 'Inter', sans-serif;">Auto Invoice PDF Sender</h4>
-                    <p style="font-size: 12.5px; color: #64748B; margin-bottom: 12px; line-height: 1.5;">Generate, attach, and email invoice PDFs to customers as soon as the invoice validation completes.</p>
-                  </div>
-                  <div style="display: flex; gap: 6px;">
-                    <span style="font-size: 10px; background-color: #F3E8FF; color: #7C3AED; padding: 2px 6px; border-radius: 4px; font-weight: 700; text-transform: uppercase;">Invoicing</span>
-                    <span style="font-size: 10px; background-color: #F3E8FF; color: #7C3AED; padding: 2px 6px; border-radius: 4px; font-weight: 700; text-transform: uppercase;">Automation</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Card 3 -->
-            <div class="col-md-4">
-              <div class="card hover-card-effect" style="background-color: #FFFFFF; border: 1px solid #E9DDFE; border-radius: 16px; overflow: hidden; box-shadow: 0 1px 3px rgba(124, 58, 237, 0.05); display: flex; flex-direction: column; height: 100%; padding: 0;">
-                <div style="background-color: #F8F5FF; height: 140px; display: flex; align-items: center; justify-content: center; font-size: 40px; color: #7C3AED; border-bottom: 1px solid #E9DDFE;"><i class="fa fa-line-chart"></i></div>
-                <div style="padding: 20px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between;">
-                  <div>
-                    <h4 style="font-size: 15px; margin-bottom: 6px; font-weight: 700; color: #1E293B; font-family: 'Inter', sans-serif;">Sales Commission Manager</h4>
-                    <p style="font-size: 12.5px; color: #64748B; margin-bottom: 12px; line-height: 1.5;">Set custom sales agent targets, tier models, and track commission rates dynamically from invoice states.</p>
-                  </div>
-                  <div style="display: flex; gap: 6px;">
-                    <span style="font-size: 10px; background-color: #F3E8FF; color: #7C3AED; padding: 2px 6px; border-radius: 4px; font-weight: 700; text-transform: uppercase;">Sales</span>
-                    <span style="font-size: 10px; background-color: #F3E8FF; color: #7C3AED; padding: 2px 6px; border-radius: 4px; font-weight: 700; text-transform: uppercase;">HR</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-          </div>
+        <div style="border-bottom: 1px solid #E2E8F0; padding: 15px 0;">
+            <h4 style="font-weight: 700; font-size: 15px; margin: 0 0 6px; color: #2D3748;">Can I filter by warehouse or specific location?</h4>
+            <p style="font-size: 13.5px; color: #718096; margin: 0; line-height: 1.5;">The current version calculates ledger movements for the selected product date-wise across all warehouse locations. For dedicated location filtering, contact Ahex Technologies for customization.</p>
         </div>
 
-        <!-- Social Connections Row -->
-        <div style="margin-top: 40px; text-align: center;">
-          <h4 style="font-size: 13px; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 16px; font-weight: 700; font-family: 'Inter', sans-serif;">Connect With Us</h4>
-          <div style="display: flex; justify-content: center; gap: 20px;">
-            <a href="https://www.facebook.com/AhexTechnologies/" target="_blank" style="font-size: 24px; color: #3b5998;"><i class="fa fa-facebook-official"></i></a>
-            <a href="https://www.instagram.com/ahextechnologies/" target="_blank" style="font-size: 24px; color: #e1306c;"><i class="fa fa-instagram"></i></a>
-            <a href="https://www.linkedin.com/company/ahex-technologies/" target="_blank" style="font-size: 24px; color: #0077b5;"><i class="fa fa-linkedin-square"></i></a>
-          </div>
+        <div style="border-bottom: 1px solid #E2E8F0; padding: 15px 0;">
+            <h4 style="font-weight: 700; font-size: 15px; margin: 0 0 6px; color: #2D3748;">How is the opening balance calculated?</h4>
+            <p style="font-size: 13.5px; color: #718096; margin: 0; line-height: 1.5;">The opening balance is calculated by summing all completed (Done state) stock movements for the product from the beginning of your Odoo history up to the selected From date. Incoming quantities add to the balance, while outgoing quantities subtract from it.</p>
         </div>
 
-      </div>
-    </footer>
-
-  </div>
-
-
-</body>
-</html>
+        <div style="padding: 15px 0;">
+            <h4 style="font-weight: 700; font-size: 15px; margin: 0 0 6px; color: #2D3748;">What is the difference between this and Odoo's standard inventory report?</h4>
+            <p style="font-size: 13.5px; color: #718096; margin: 0; line-height: 1.5;">Odoo's standard reporting shows current stock valuations or stock moves lists, but lacks a running chronological ledger. Our module orders movements by date, shows exact from/to locations, color-codes IN/OUT movements, and calculates a running balance after each transaction—just like a bank statement.</p>
+        </div>
+    </div>
+</section>
