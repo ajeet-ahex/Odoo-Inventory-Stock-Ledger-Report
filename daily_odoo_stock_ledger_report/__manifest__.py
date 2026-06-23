@@ -19,7 +19,7 @@
     'images': ['static/description/banner.gif'],
     'price' : '19',
     'currency' : 'USD',
-    # "live_test_url": "https://ahex.co/contact/",
+    "live_test_url": "https://youtu.be/UB50XN4eA7E",
     'license': 'OPL-1',
     'application': False,
     'installable': True,
