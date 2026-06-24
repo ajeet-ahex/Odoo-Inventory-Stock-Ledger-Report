@@ -1,6 +1,6 @@
 {
     'name': 'Stock Ledger Report',
-    'version': '19.0.0.1',
+    'version': '18.0.0.1',
     'category': 'Inventory',
     'summary': 'Stock Ledger Report with Opening Balance and Running Balance for Inventory',
     'author': 'Ahex Technologies',

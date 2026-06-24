@@ -28,9 +28,9 @@ class ProductProduct(models.Model):
 
         for move in opening_moves:
             if move.location_dest_id.usage == 'internal':
-                opening_qty += move.qty_done
+                opening_qty += move.quantity
             if move.location_id.usage == 'internal':
-                opening_qty -= move.qty_done
+                opening_qty -= move.quantity
 
         balance = opening_qty
 
@@ -63,17 +63,17 @@ class ProductProduct(models.Model):
 
             if src_internal and dest_internal:
                 # Internal transfer - does not affect net balance
-                in_qty = move.qty_done
-                out_qty = move.qty_done
+                in_qty = move.quantity
+                out_qty = move.quantity
                 transaction_type = 'internal'
             elif dest_internal:
                 # Incoming stock
-                in_qty = move.qty_done
+                in_qty = move.quantity
                 balance += in_qty
                 transaction_type = 'in'
             elif src_internal:
                 # Outgoing stock
-                out_qty = move.qty_done
+                out_qty = move.quantity
                 balance -= out_qty
                 transaction_type = 'out'
             else:
