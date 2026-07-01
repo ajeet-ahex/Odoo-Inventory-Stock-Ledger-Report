@@ -12,7 +12,9 @@ class StockLedgerLine(models.TransientModel):
     product_id = fields.Many2one('product.product', string="Product")
     date = fields.Datetime(string="Date")
     from_location = fields.Many2one('stock.location', string="From")
+    from_warehouse = fields.Many2one('stock.warehouse', string="From Warehouse", related='from_location.warehouse_id', store=True)
     to_location = fields.Many2one('stock.location', string="To")
+    to_warehouse = fields.Many2one('stock.warehouse', string="To Warehouse", related='to_location.warehouse_id', store=True)
     in_qty = fields.Float(string="Incoming")
     out_qty = fields.Float(string="Outgoing")
 
@@ -23,3 +25,4 @@ class StockLedgerLine(models.TransientModel):
         ('internal', 'INTERNAL')
     ], string="Type")
     balance = fields.Float(string="Balance")
+    location_balances_html = fields.Html(string="Balance per location")

@@ -21,6 +21,12 @@
     'currency' : 'USD',
     "live_test_url": "https://youtu.be/UB50XN4eA7E",
     'license': 'OPL-1',
+    'assets': {
+        'web.assets_backend': [
+            'daily_odoo_stock_ledger_report/static/src/views/stock_ledger_dashboard.xml',
+            'daily_odoo_stock_ledger_report/static/src/views/stock_ledger_dashboard.js',
+        ],
+    },
     'application': False,
     'installable': True,
     'auto_install': False,
